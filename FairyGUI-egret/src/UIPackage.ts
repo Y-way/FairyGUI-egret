@@ -32,7 +32,12 @@ module fairygui {
 
         public static addPackage(resKey: string, descData: ArrayBuffer|null = null): UIPackage {
             if (!descData) {
-                descData = RES.getRes(resKey);
+				descData = RES.getRes(resKey);
+                if (!descData) {
+                    //因为在设置default.res.json中引用的资源
+                    //EgretWing 工具会自动将资源名设定成 "文件名"+"_"+"文件扩展名"的格式.
+                    descData = RES.getRes(resKey + "_fui");
+                }
                 if (!descData)
                     throw "Resource '" + resKey + "' not found, please check default.res.json!";
             }
@@ -47,11 +52,19 @@ module fairygui {
 
         public static removePackage(packageId: string): void {
             let pkg: UIPackage = UIPackage._packageInstById[packageId];
+			if(pkg == null){
+                return;
+            }
             pkg.dispose();
             delete UIPackage._packageInstById[pkg.id];
             if (pkg._customId != null)
                 delete UIPackage._packageInstById[pkg._customId];
             delete UIPackage._packageInstByName[pkg.name];
+            if(RES.hasRes(pkg.customId)){
+                RES.destroyRes(pkg.customId);
+            } else {
+                RES.destroyRes(pkg.customId + "_fui");
+            }
         }
 
         public static createObject(pkgName: string, resName: string, userClass: any = null): GObject|null {
