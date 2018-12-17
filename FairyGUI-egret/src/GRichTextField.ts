@@ -10,7 +10,7 @@ module fairygui {
         }
 
         protected updateTextFieldText(): void {
-            var text2: string = this._text;
+            let text2: string = this._text;
             if (this._templateVars != null)
                 text2 = this.parseTemplate(text2);
             if (this._ubbEnabled)

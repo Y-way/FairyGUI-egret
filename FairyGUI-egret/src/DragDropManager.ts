@@ -38,7 +38,7 @@ module fairygui {
             this._sourceData = sourceData;
             this._agent.url = icon;
             fairygui.GRoot.inst.addChild(this._agent);
-            var pt: egret.Point = GRoot.inst.globalToLocal(GRoot.mouseX, GRoot.mouseY);
+            let pt: egret.Point = GRoot.inst.globalToLocal(GRoot.mouseX, GRoot.mouseY);
             this._agent.setXY(pt.x, pt.y);
             this._agent.startDrag(touchPointID);
         }
@@ -57,13 +57,13 @@ module fairygui {
 
             fairygui.GRoot.inst.removeChild(this._agent);
 
-            var sourceData: any = this._sourceData;
+            let sourceData: any = this._sourceData;
             this._sourceData = null;
 
-            var obj: fairygui.GObject = fairygui.GRoot.inst.getObjectUnderPoint(evt.stageX, evt.stageY);
+            let obj: fairygui.GObject|null = fairygui.GRoot.inst.getObjectUnderPoint(evt.stageX, evt.stageY);
             while (obj != null) {
                 if (obj.hasEventListener(DropEvent.DROP)) {
-                    var dropEvt: DropEvent = new DropEvent(DropEvent.DROP, sourceData);
+                    let dropEvt: DropEvent = new DropEvent(DropEvent.DROP, sourceData);
                     obj.requestFocus();
                     obj.dispatchEvent(dropEvt);
                     return;

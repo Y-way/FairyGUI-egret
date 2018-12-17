@@ -19,7 +19,7 @@ module fairygui {
         public scaleByTile: boolean;
         public tileGridIndice: number = 0;
         public smoothing: boolean;
-        public texture: egret.Texture;
+        public texture: egret.Texture|null;
         //public pixelHitTestData: PixelHitTestData;
 
         //movieclip

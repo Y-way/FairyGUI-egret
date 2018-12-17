@@ -3,7 +3,7 @@ module fairygui {
 
     export class GearText extends GearBase {
         private _storage: any;
-        private _default: string;
+        private _default: string|null;
 
         public constructor(owner: GObject) {
             super(owner);
@@ -24,7 +24,7 @@ module fairygui {
         public apply(): void {
             this._owner._gearLocked = true;
 
-            var data: any = this._storage[this._controller.selectedPageId];
+            let data: any = this._storage[<string>this._controller.selectedPageId];
             if (data !== undefined)
                 this._owner.text = data;
             else
@@ -34,7 +34,7 @@ module fairygui {
         }
 
         public updateState(): void {
-            this._storage[this._controller.selectedPageId] = this._owner.text;
+            this._storage[<string>this._controller.selectedPageId] = this._owner.text;
         }
     }
 }

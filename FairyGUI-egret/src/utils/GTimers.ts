@@ -32,10 +32,10 @@ module fairygui {
                 return new TimerItem();
         }
 
-        private findItem(callback: Function, thisObj: any): TimerItem {
-            var len: number = this._items.length;
-            for (var i: number = 0; i < len; i++) {
-                var item: TimerItem = this._items[i];
+        private findItem(callback: Function, thisObj: any): TimerItem|null {
+            let len: number = this._items.length;
+            for (let i: number = 0; i < len; i++) {
+                let item: TimerItem = this._items[i];
                 if (item.callback == callback && item.thisObj == thisObj)
                     return item;
             }
@@ -43,7 +43,7 @@ module fairygui {
         }
 
         public add(delayInMiniseconds: number, repeat: number, callback: Function, thisObj: any, callbackParam: any = null): void {
-            var item: TimerItem = this.findItem(callback, thisObj);
+            let item: TimerItem|null = this.findItem(callback, thisObj);
             if (!item) {
                 item = this.getItem();
                 item.callback = callback;
@@ -71,14 +71,14 @@ module fairygui {
         }
 
         public exists(callback: Function, thisObj: any): boolean {
-            var item: TimerItem = this.findItem(callback, thisObj);
+            let item: TimerItem|null = this.findItem(callback, thisObj);
             return item != null;
         }
 
         public remove(callback: Function, thisObj: any): void {
-            var item: TimerItem = this.findItem(callback, thisObj);
+            let item: TimerItem|null = this.findItem(callback, thisObj);
             if (item) {
-                var i: number = this._items.indexOf(item);
+                let i: number = this._items.indexOf(item);
                 this._items.splice(i, 1);
                 if (i < this._enumI)
                     this._enumI--;
@@ -98,7 +98,7 @@ module fairygui {
             this._enumCount = this._items.length;
 
             while (this._enumI < this._enumCount) {
-                var item: TimerItem = this._items[this._enumI];
+                let item: TimerItem = this._items[this._enumI];
                 this._enumI++;
 
                 if (item.advance(GTimers.deltaTime)) {
@@ -107,11 +107,12 @@ module fairygui {
                         this._enumCount--;
                         this._items.splice(this._enumI, 1);
                     }
-
-                    if (item.hasParam)
-                        item.callback.call(item.thisObj, item.param);
-                    else
-                        item.callback.call(item.thisObj);
+                    if(item.callback != null){
+                        if (item.hasParam)
+                            item.callback.call(item.thisObj, item.param);
+                        else
+                            item.callback.call(item.thisObj);
+                    }
 
                     if (item.end) {
                         item.reset();
@@ -129,7 +130,7 @@ module fairygui {
         public delay: number = 0;
         public counter: number = 0;
         public repeat: number = 0;
-        public callback: Function;
+        public callback: Function|null;
         public thisObj: any;
         public param: any;
 

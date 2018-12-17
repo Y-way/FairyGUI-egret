@@ -18,7 +18,7 @@ module fairygui {
         }
 
         protected addStatus(pageId: string, buffer: ByteBuffer): void {
-            var gv: GearColorValue;
+            let gv: GearColorValue;
             if (pageId == null)
                 gv = this._default;
             else {
@@ -33,7 +33,7 @@ module fairygui {
         public apply(): void {
             this._owner._gearLocked = true;
 
-            var gv: GearColorValue = this._storage[this._controller.selectedPageId];
+            let gv: GearColorValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv)
                 gv = this._default;
 
@@ -45,10 +45,10 @@ module fairygui {
         }
 
         public updateState(): void {
-            var gv: GearColorValue = this._storage[this._controller.selectedPageId];
+            let gv: GearColorValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv) {
-                gv = new GearColorValue(null, null);
-                this._storage[this._controller.selectedPageId] = gv;
+                gv = new GearColorValue(<any>null, <any>null);
+                this._storage[<string>this._controller.selectedPageId] = gv;
             }
 
             gv.color = (<any>this._owner).color;

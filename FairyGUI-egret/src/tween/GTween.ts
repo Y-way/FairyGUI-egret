@@ -36,11 +36,11 @@ module fairygui {
             return TweenManager.isTweening(target, propType);
         }
 
-        public static kill(target: Object, complete: Boolean = false, propType: Object = null): void {
+        public static kill(target: Object, complete: Boolean = false, propType: Object|null = null): void {
             TweenManager.killTweens(target, false, null);
         }
 
-        public static getTween(target: Object, propType: Object = null): GTweener {
+        public static getTween(target: Object, propType: Object|null = null): GTweener|null {
             return TweenManager.getTween(target, propType);
         }
     }

@@ -98,7 +98,7 @@ module fairygui {
                     if ((time /= duration * 0.5) < 1) return -0.5 * (Math.sqrt(1 - time * time) - 1);
                     return 0.5 * (Math.sqrt(1 - (time -= 2) * time) + 1);
                 case EaseType.ElasticIn:
-                    var s0: number;
+                    let s0: number;
                     if (time == 0) return 0;
                     if ((time /= duration) == 1) return 1;
                     if (period == 0) period = duration * 0.3;
@@ -109,7 +109,7 @@ module fairygui {
                     else s0 = period / EaseManager._TwoPi * Math.asin(1 / overshootOrAmplitude);
                     return -(overshootOrAmplitude * Math.pow(2, 10 * (time -= 1)) * Math.sin((time * duration - s0) * EaseManager._TwoPi / period));
                 case EaseType.ElasticOut:
-                    var s1: number;
+                    let s1: number;
                     if (time == 0) return 0;
                     if ((time /= duration) == 1) return 1;
                     if (period == 0) period = duration * 0.3;
@@ -120,7 +120,7 @@ module fairygui {
                     else s1 = period / EaseManager._TwoPi * Math.asin(1 / overshootOrAmplitude);
                     return (overshootOrAmplitude * Math.pow(2, -10 * time) * Math.sin((time * duration - s1) * EaseManager._TwoPi / period) + 1);
                 case EaseType.ElasticInOut:
-                    var s: number;
+                    let s: number;
                     if (time == 0) return 0;
                     if ((time /= duration * 0.5) == 2) return 1;
                     if (period == 0) period = duration * (0.3 * 1.5);

@@ -4,7 +4,7 @@ module fairygui {
     export class GComponent extends GObject {
         private _sortingChildCount: number = 0;
         private _opaque: boolean;
-        private _applyingController: Controller;
+        private _applyingController: Controller|null;
 
         protected _margin: Margin;
         protected _trackBounds: boolean;
@@ -38,18 +38,18 @@ module fairygui {
         }
 
         public dispose(): void {
-            var i: number;
-            var cnt: number;
+            let i: number;
+            let cnt: number;
 
             cnt = this._transitions.length;
             for (i = 0; i < cnt; ++i) {
-                var trans: Transition = this._transitions[i];
+                let trans: Transition = this._transitions[i];
                 trans.dispose();
             }
 
             cnt = this._controllers.length;
             for (i = 0; i < cnt; ++i) {
-                var cc: Controller = this._controllers[i];
+                let cc: Controller = this._controllers[i];
                 cc.dispose();
             }
 
@@ -58,7 +58,7 @@ module fairygui {
 
             cnt = this._children.length;
             for (i = cnt - 1; i >= 0; --i) {
-                var obj: GObject = this._children[i];
+                let obj: GObject = this._children[i];
                 obj.parent = null;//avoid removeFromParent call
                 obj.dispose();
             }
@@ -80,7 +80,7 @@ module fairygui {
             if (!child)
                 throw "child is null";
 
-            var numChildren: number = this._children.length;
+            let numChildren: number = this._children.length;
 
             if (index >= 0 && index <= numChildren) {
                 if (child.parent == this) {
@@ -90,7 +90,7 @@ module fairygui {
                     child.removeFromParent();
                     child.parent = this;
 
-                    var cnt: number = this._children.length;
+                    let cnt: number = this._children.length;
                     if (child.sortingOrder != 0) {
                         this._sortingChildCount++;
                         index = this.getInsertPosForSortingChild(child);
@@ -117,10 +117,10 @@ module fairygui {
         }
 
         private getInsertPosForSortingChild(target: GObject): number {
-            var cnt: number = this._children.length;
-            var i: number = 0;
+            let cnt: number = this._children.length;
+            let i: number = 0;
             for (i = 0; i < cnt; i++) {
-                var child: GObject = this._children[i];
+                let child: GObject = this._children[i];
                 if (child == target)
                     continue;
 
@@ -131,7 +131,7 @@ module fairygui {
         }
 
         public removeChild(child: GObject, dispose: boolean = false): GObject {
-            var childIndex: number = this._children.indexOf(child);
+            let childIndex: number = this._children.indexOf(child);
             if (childIndex != -1) {
                 this.removeChildAt(childIndex, dispose);
             }
@@ -140,7 +140,7 @@ module fairygui {
 
         public removeChildAt(index: number, dispose: boolean = false): GObject {
             if (index >= 0 && index < this.numChildren) {
-                var child: GObject = this._children[index];
+                let child: GObject = this._children[index];
                 child.parent = null;
 
                 if (child.sortingOrder != 0)
@@ -170,7 +170,7 @@ module fairygui {
             if (endIndex < 0 || endIndex >= this.numChildren)
                 endIndex = this.numChildren - 1;
 
-            for (var i: number = beginIndex; i <= endIndex; ++i)
+            for (let i: number = beginIndex; i <= endIndex; ++i)
                 this.removeChildAt(beginIndex, dispose);
         }
 
@@ -181,20 +181,19 @@ module fairygui {
                 throw "Invalid child index";
         }
 
-        public getChild(name: string): GObject {
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
+        public getChild(name: string): GObject|null {
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 if (this._children[i].name == name)
                     return this._children[i];
             }
-
             return null;
         }
 
-        public getVisibleChild(name: string): GObject {
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
-                var child: GObject = this._children[i];
+        public getVisibleChild(name: string): GObject|null {
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
+                let child: GObject = this._children[i];
                 if (child.internalVisible && child.internalVisible && child.name == name)
                     return child;
             }
@@ -202,10 +201,10 @@ module fairygui {
             return null;
         }
 
-        public getChildInGroup(name: string, group: GGroup): GObject {
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
-                var child: GObject = this._children[i];
+        public getChildInGroup(name: string, group: GGroup): GObject|null {
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
+                let child: GObject = this._children[i];
                 if (child.group == group && child.name == name)
                     return child;
             }
@@ -213,9 +212,9 @@ module fairygui {
             return null;
         }
 
-        public getChildById(id: string): GObject {
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
+        public getChildById(id: string): GObject|null {
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 if (this._children[i]._id == id)
                     return this._children[i];
             }
@@ -228,14 +227,14 @@ module fairygui {
         }
 
         public setChildIndex(child: GObject, index: number = 0): void {
-            var oldIndex: number = this._children.indexOf(child);
+            let oldIndex: number = this._children.indexOf(child);
             if (oldIndex == -1)
                 throw "Not a child of this container";
 
             if (child.sortingOrder != 0) //no effect
                 return;
 
-            var cnt: number = this._children.length;
+            let cnt: number = this._children.length;
             if (this._sortingChildCount > 0) {
                 if (index > (cnt - this._sortingChildCount - 1))
                     index = cnt - this._sortingChildCount - 1;
@@ -245,14 +244,14 @@ module fairygui {
         }
 
         public setChildIndexBefore(child: GObject, index: number): number {
-            var oldIndex: number = this._children.indexOf(child);
+            let oldIndex: number = this._children.indexOf(child);
             if (oldIndex == -1)
                 throw "Not a child of this container";
 
             if (child.sortingOrder != 0) //no effect
                 return oldIndex;
 
-            var cnt: number = this._children.length;
+            let cnt: number = this._children.length;
             if (this._sortingChildCount > 0) {
                 if (index > (cnt - this._sortingChildCount - 1))
                     index = cnt - this._sortingChildCount - 1;
@@ -265,7 +264,7 @@ module fairygui {
         }
 
         private _setChildIndex(child: GObject, oldIndex: number, index: number = 0): number {
-            var cnt: number = this._children.length;
+            let cnt: number = this._children.length;
             if (index > cnt)
                 index = cnt;
 
@@ -276,9 +275,9 @@ module fairygui {
             this._children.splice(index, 0, child);
 
             if (child.inContainer) {
-                var displayIndex: number = 0;
-                var g: GObject;
-                var i: number;
+                let displayIndex: number = 0;
+                let g: GObject;
+                let i: number;
 
                 if (this._childrenRenderOrder == ChildrenRenderOrder.Ascent) {
                     for (i = 0; i < index; i++) {
@@ -311,16 +310,16 @@ module fairygui {
         }
 
         public swapChildren(child1: GObject, child2: GObject): void {
-            var index1: number = this._children.indexOf(child1);
-            var index2: number = this._children.indexOf(child2);
+            let index1: number = this._children.indexOf(child1);
+            let index2: number = this._children.indexOf(child2);
             if (index1 == -1 || index2 == -1)
                 throw "Not a child of this container";
             this.swapChildrenAt(index1, index2);
         }
 
         public swapChildrenAt(index1: number, index2: number = 0): void {
-            var child1: GObject = this._children[index1];
-            var child2: GObject = this._children[index2];
+            let child1: GObject = this._children[index1];
+            let child2: GObject = this._children[index2];
 
             this.setChildIndex(child1, index2);
             this.setChildIndex(child2, index1);
@@ -334,7 +333,7 @@ module fairygui {
             if (child == null)
                 return false;
 
-            var p: GComponent = child.parent;
+            let p: GComponent|null = child.parent;
             while (p) {
                 if (p == this)
                     return true;
@@ -354,10 +353,10 @@ module fairygui {
             return this._controllers[index];
         }
 
-        public getController(name: string): Controller {
-            var cnt: number = this._controllers.length;
-            for (var i: number = 0; i < cnt; ++i) {
-                var c: Controller = this._controllers[i];
+        public getController(name: string): Controller|null {
+            let cnt: number = this._controllers.length;
+            for (let i: number = 0; i < cnt; ++i) {
+                let c: Controller = this._controllers[i];
                 if (c.name == name)
                     return c;
             }
@@ -366,16 +365,16 @@ module fairygui {
         }
 
         public removeController(c: Controller): void {
-            var index: number = this._controllers.indexOf(c);
+            let index: number = this._controllers.indexOf(c);
             if (index == -1)
                 throw "controller not exists";
 
             c.parent = null;
             this._controllers.splice(index, 1);
 
-            var length: number = this._children.length;
-            for (var i: number = 0; i < length; i++) {
-                var child: GObject = this._children[i];
+            let length: number = this._children.length;
+            for (let i: number = 0; i < length; i++) {
+                let child: GObject = this._children[i];
                 child.handleControllerChanged(c);
             }
         }
@@ -388,9 +387,9 @@ module fairygui {
             if (this._buildingDisplayList)
                 return;
 
-            var cnt: number = this._children.length;
-            var g: GObject;
-            var i: number;
+            let cnt: number = this._children.length;
+            let g: GObject;
+            let i: number;
 
             if (child instanceof GGroup) {
                 for (i = 0; i < cnt; i++) {
@@ -406,7 +405,7 @@ module fairygui {
 
             if (child.internalVisible) {
                 if (!child.displayObject.parent) {
-                    var index: number = 0;
+                    let index: number = 0;
                     if (this._childrenRenderOrder == ChildrenRenderOrder.Ascent) {
                         for (i = 0; i < cnt; i++) {
                             g = this._children[i];
@@ -443,12 +442,12 @@ module fairygui {
         }
 
         private buildNativeDisplayList(): void {
-            var cnt: number = this._children.length;
+            let cnt: number = this._children.length;
             if (cnt == 0)
                 return;
 
-            var i: number;
-            var child: GObject;
+            let i: number;
+            let child: GObject;
             switch (this._childrenRenderOrder) {
                 case ChildrenRenderOrder.Ascent:
                     {
@@ -488,9 +487,9 @@ module fairygui {
 
         public applyController(c: Controller): void {
             this._applyingController = c;
-            var child: GObject;
-            var length: number = this._children.length;
-            for (var i: number = 0; i < length; i++) {
+            let child: GObject;
+            let length: number = this._children.length;
+            for (let i: number = 0; i < length; i++) {
                 child = this._children[i];
                 child.handleControllerChanged(c);
             }
@@ -500,17 +499,17 @@ module fairygui {
         }
 
         public applyAllControllers(): void {
-            var cnt: number = this._controllers.length;
-            for (var i: number = 0; i < cnt; ++i) {
+            let cnt: number = this._controllers.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 this.applyController(this._controllers[i]);
             }
         }
 
         public adjustRadioGroupDepth(obj: GObject, c: Controller): void {
-            var cnt: number = this._children.length;
-            var i: number;
-            var child: GObject;
-            var myIndex: number = -1, maxIndex: number = -1;
+            let cnt: number = this._children.length;
+            let i: number;
+            let child: GObject;
+            let myIndex: number = -1, maxIndex: number = -1;
             for (i = 0; i < cnt; i++) {
                 child = this._children[i];
                 if (child == obj) {
@@ -533,10 +532,10 @@ module fairygui {
             return this._transitions[index];
         }
 
-        public getTransition(transName: string): Transition {
-            var cnt: number = this._transitions.length;
-            for (var i: number = 0; i < cnt; ++i) {
-                var trans: Transition = this._transitions[i];
+        public getTransition(transName: string): Transition|null {
+            let cnt: number = this._transitions.length;
+            for (let i: number = 0; i < cnt; ++i) {
+                let trans: Transition = this._transitions[i];
                 if (trans.name == transName)
                     return trans;
             }
@@ -557,9 +556,9 @@ module fairygui {
         }
 
         public getFirstChildInView(): number {
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
-                var child: GObject = this._children[i];
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
+                let child: GObject = this._children[i];
                 if (this.isChildInView(child))
                     return i;
             }
@@ -580,7 +579,7 @@ module fairygui {
                 if (this._opaque)
                     this.updateOpaque();
                 else
-                    this._rootContainer.hitArea = null;
+                    this._rootContainer.hitArea = <any>null;
             }
         }
 
@@ -630,9 +629,9 @@ module fairygui {
         }
 
         public get baseUserData(): string {
-            var buffer: ByteBuffer = this.packageItem.rawData;
+            let buffer: ByteBuffer = this.packageItem.rawData;
             buffer.seek(0, 4);
-            return buffer.readS();
+            return <string>buffer.readS();
         }
 
         protected updateOpaque() {
@@ -642,12 +641,12 @@ module fairygui {
         }
 
         protected updateScrollRect() {
-            var rect: egret.Rectangle = this._rootContainer.scrollRect;
+            let rect: egret.Rectangle = this._rootContainer.scrollRect;
             if (rect == null)
                 rect = new egret.Rectangle();
 
-            var w: number = this.width - this._margin.right;
-            var h: number = this.height - this._margin.bottom;
+            let w: number = this.width - this._margin.right;
+            let h: number = this.height - this._margin.bottom;
             rect.setTo(0, 0, w, h);
             this._rootContainer.scrollRect = rect;
         }
@@ -695,15 +694,15 @@ module fairygui {
         }
 
         protected handleGrayedChanged(): void {
-            var c: Controller = this.getController("grayed");
+            let c: Controller|null = this.getController("grayed");
             if (c != null) {
                 c.selectedIndex = this.grayed ? 1 : 0;
                 return;
             }
 
-            var v: boolean = this.grayed;
-            var cnt: number = this._children.length;
-            for (var i: number = 0; i < cnt; ++i) {
+            let v: boolean = this.grayed;
+            let cnt: number = this._children.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 this._children[i].grayed = v;
             }
         }
@@ -728,10 +727,10 @@ module fairygui {
 
         private __render(): void {
             if (this._boundsChanged) {
-                var len: number = this._children.length;
+                let len: number = this._children.length;
                 if (len > 0) {
-                    for (var i: number = 0; i < len; i++) {
-                        var child: GObject = this._children[i];
+                    for (let i: number = 0; i < len; i++) {
+                        let child: GObject = this._children[i];
                         child.ensureSizeCorrect();
                     }
                 }
@@ -741,10 +740,10 @@ module fairygui {
         }
 
         public ensureBoundsCorrect(): void {
-            var len: number = this._children.length;
+            let len: number = this._children.length;
             if (len > 0) {
-                for (var i: number = 0; i < len; i++) {
-                    var child: GObject = this._children[i];
+                for (let i: number = 0; i < len; i++) {
+                    let child: GObject = this._children[i];
                     child.ensureSizeCorrect();
                 }
             }
@@ -754,16 +753,16 @@ module fairygui {
         }
 
         protected updateBounds(): void {
-            var ax: number = 0, ay: number = 0, aw: number = 0, ah: number = 0;
-            var len: number = this._children.length;
+            let ax: number = 0, ay: number = 0, aw: number = 0, ah: number = 0;
+            let len: number = this._children.length;
             if (len > 0) {
                 ax = Number.POSITIVE_INFINITY, ay = Number.POSITIVE_INFINITY;
-                var ar: number = Number.NEGATIVE_INFINITY, ab: number = Number.NEGATIVE_INFINITY;
-                var tmp: number = 0;
-                var i: number = 0;
+                let ar: number = Number.NEGATIVE_INFINITY, ab: number = Number.NEGATIVE_INFINITY;
+                let tmp: number = 0;
+                let i: number = 0;
 
-                for (var i: number = 0; i < len; i++) {
-                    var child: GObject = this._children[i];
+                for (let i: number = 0; i < len; i++) {
+                    let child: GObject = this._children[i];
                     tmp = child.x;
                     if (tmp < ax)
                         ax = tmp;
@@ -823,7 +822,7 @@ module fairygui {
             if (!resultPoint)
                 resultPoint = new egret.Point();
 
-            var cnt: number = this._children.length;
+            let cnt: number = this._children.length;
             if (cnt == 0) {
                 resultPoint.x = 0;
                 resultPoint.y = 0;
@@ -832,9 +831,9 @@ module fairygui {
 
             this.ensureBoundsCorrect();
 
-            var obj: GObject = null;
-            var prev: GObject = null;
-            var i: number = 0;
+            let obj: GObject|null = null;
+            let prev: GObject|null = null;
+            let i: number = 0;
             if (yValue != 0) {
                 for (; i < cnt; i++) {
                     obj = this._children[i];
@@ -854,7 +853,7 @@ module fairygui {
                     }
                 }
 
-                if (i == cnt)
+                if (i == cnt && obj != null)
                     yValue = obj.y;
             }
 
@@ -879,7 +878,7 @@ module fairygui {
                     }
                 }
 
-                if (i == cnt)
+                if (i == cnt && obj != null)
                     xValue = obj.x;
             }
 
@@ -897,8 +896,8 @@ module fairygui {
                 if (oldValue == 0)
                     this._sortingChildCount++;
 
-                var oldIndex: number = this._children.indexOf(child);
-                var index: number = this.getInsertPosForSortingChild(child);
+                let oldIndex: number = this._children.indexOf(child);
+                let index: number = this.getInsertPosForSortingChild(child);
                 if (oldIndex < index)
                     this._setChildIndex(child, oldIndex, index - 1);
                 else
@@ -910,22 +909,22 @@ module fairygui {
             this.constructFromResource2(null, 0);
         }
 
-        public constructFromResource2(objectPool: Array<GObject>, poolIndex: number): void {
+        public constructFromResource2(objectPool: Array<GObject>|null, poolIndex: number): void {
             if (!this.packageItem.decoded) {
                 this.packageItem.decoded = true;
                 TranslationHelper.translateComponent(this.packageItem);
             }
 
-            var i: number;
-            var dataLen: number;
-            var curPos: number;
-            var nextPos: number;
-            var f1: number;
-            var f2: number;
-            var i1: number;
-            var i2: number;
+            let i: number;
+            let dataLen: number;
+            let curPos: number;
+            let nextPos: number;
+            let f1: number;
+            let f2: number;
+            let i1: number;
+            let i2: number;
 
-            var buffer: ByteBuffer = this.packageItem.rawData;
+            let buffer: ByteBuffer = this.packageItem.rawData;
             buffer.seek(0, 0);
 
             this._underConstruct = true;
@@ -957,9 +956,9 @@ module fairygui {
                 this._margin.right = buffer.readInt();
             }
 
-            var overflow: number = buffer.readByte();
+            let overflow: number = buffer.readByte();
             if (overflow == OverflowType.Scroll) {
-                var savedPos: number = buffer.position;
+                let savedPos: number = buffer.position;
                 buffer.seek(0, 7);
                 this.setupScroll(buffer);
                 buffer.position = savedPos;
@@ -974,12 +973,12 @@ module fairygui {
 
             buffer.seek(0, 1);
 
-            var controllerCount: number = buffer.readShort();
+            let controllerCount: number = buffer.readShort();
             for (i = 0; i < controllerCount; i++) {
                 nextPos = buffer.readShort();
                 nextPos += buffer.position;
 
-                var controller: Controller = new Controller();
+                let controller: Controller = new Controller();
                 this._controllers.push(controller);
                 controller.parent = this;
                 controller.setup(buffer);
@@ -989,8 +988,8 @@ module fairygui {
 
             buffer.seek(0, 2);
 
-            var child: GObject;
-            var childCount: number = buffer.readShort();
+            let child: GObject;
+            let childCount: number = buffer.readShort();
             for (i = 0; i < childCount; i++) {
                 dataLen = buffer.readShort();
                 curPos = buffer.position;
@@ -1000,13 +999,13 @@ module fairygui {
                 else {
                     buffer.seek(curPos, 0);
 
-                    var type: ObjectType = buffer.readByte();
-                    var src: string = buffer.readS();
-                    var pkgId: string = buffer.readS();
+                    let type: ObjectType = buffer.readByte();
+                    let src: string|null = buffer.readS();
+                    let pkgId: string|null = buffer.readS();
 
-                    var pi: PackageItem = null;
+                    let pi: PackageItem|null = null;
                     if (src != null) {
-                        var pkg: UIPackage;
+                        let pkg: UIPackage;
                         if (pkgId != null)
                             pkg = UIPackage.getById(pkgId);
                         else
@@ -1016,12 +1015,12 @@ module fairygui {
                     }
 
                     if (pi != null) {
-                        child = UIObjectFactory.newObject(pi);
+                        child = <GObject>UIObjectFactory.newObject(pi);
                         child.packageItem = pi;
                         child.constructFromResource();
                     }
                     else
-                        child = UIObjectFactory.newObject2(type);
+                        child = <GObject>UIObjectFactory.newObject2(type);
                 }
 
                 child._underConstruct = true;
@@ -1066,12 +1065,12 @@ module fairygui {
 
             buffer.skip(2); //customData
             this.opaque = buffer.readBool();
-            var maskId: number = buffer.readShort();
+            let maskId: number = buffer.readShort();
             if (maskId != -1) {
                 this.mask = this.getChildAt(maskId).displayObject;
                 buffer.readBool(); //reversedMask
             }
-            var hitTestId: String = buffer.readS();
+            let hitTestId: string|null = buffer.readS();
             if (hitTestId != null) {
 				/*pi = this.packageItem.owner.getItemById(hitTestId);
 				if (pi != null && pi.pixelHitTestData != null)
@@ -1084,12 +1083,12 @@ module fairygui {
 
             buffer.seek(0, 5);
 
-            var transitionCount: number = buffer.readShort();
+            let transitionCount: number = buffer.readShort();
             for (i = 0; i < transitionCount; i++) {
                 nextPos = buffer.readShort();
                 nextPos += buffer.position;
 
-                var trans: Transition = new Transition(this);
+                let trans: Transition = new Transition(this);
                 trans.setup(buffer);
                 this._transitions.push(trans);
 
@@ -1127,29 +1126,29 @@ module fairygui {
 
             buffer.seek(beginPos, 4);
 
-            var pageController: number = buffer.readShort();
+            let pageController: number = buffer.readShort();
             if (pageController != null && this._scrollPane != null)
-                this._scrollPane.pageController = this._parent.getControllerAt(pageController);
+                this._scrollPane.pageController = (this._parent as GComponent).getControllerAt(pageController);
 
-            var cnt: number = buffer.readShort();
-            for (var i: number = 0; i < cnt; i++) {
-                var cc: Controller = this.getController(buffer.readS());
-                var pageId: string = buffer.readS();
+            let cnt: number = buffer.readShort();
+            for (let i: number = 0; i < cnt; i++) {
+                let cc: Controller|null = this.getController(<string>buffer.readS());
+                let pageId: string|null = buffer.readS();
                 if (cc != null)
                     cc.selectedPageId = pageId;
             }
         }
 
         private ___added(evt: egret.Event): void {
-            var cnt: number = this._transitions.length;
-            for (var i: number = 0; i < cnt; ++i) {
+            let cnt: number = this._transitions.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 this._transitions[i].onOwnerAddedToStage();
             }
         }
 
         private ___removed(evt: egret.Event): void {
-            var cnt: number = this._transitions.length;
-            for (var i: number = 0; i < cnt; ++i) {
+            let cnt: number = this._transitions.length;
+            for (let i: number = 0; i < cnt; ++i) {
                 this._transitions[i].onOwnerRemovedFromStage();
             }
         }

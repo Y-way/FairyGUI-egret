@@ -6,7 +6,7 @@ module fairygui {
         }
 
         public static getFileName(source: string): string {
-            var i: number = source.lastIndexOf("/");
+            let i: number = source.lastIndexOf("/");
             if (i != -1)
                 source = source.substr(i + 1);
             i = source.lastIndexOf("\\");
@@ -52,7 +52,7 @@ module fairygui {
         }
 
         public static trimLeft(targetString: string): string {
-            var tempChar: string = "";
+            let tempChar: string = "";
             for (var i: number = 0; i < targetString.length; i++) {
                 tempChar = targetString.charAt(i);
                 if (tempChar != " " && tempChar != "\n" && tempChar != "\r") {
@@ -63,7 +63,7 @@ module fairygui {
         }
 
         public static trimRight(targetString: string): string {
-            var tempChar: string = "";
+            let tempChar: string = "";
             for (var i: number = targetString.length - 1; i >= 0; i--) {
                 tempChar = targetString.charAt(i);
                 if (tempChar != " " && tempChar != "\n" && tempChar != "\r") {
@@ -75,14 +75,14 @@ module fairygui {
 
 
         public static convertToHtmlColor(argb: number, hasAlpha: boolean = false): string {
-            var alpha: string;
+            let alpha: string;
             if (hasAlpha)
                 alpha = (argb >> 24 & 0xFF).toString(16);
             else
                 alpha = "";
-            var red: string = (argb >> 16 & 0xFF).toString(16);
-            var green: string = (argb >> 8 & 0xFF).toString(16);
-            var blue: string = (argb & 0xFF).toString(16);
+            let red: string = (argb >> 16 & 0xFF).toString(16);
+            let green: string = (argb >> 8 & 0xFF).toString(16);
+            let blue: string = (argb & 0xFF).toString(16);
             if (alpha.length == 1)
                 alpha = "0" + alpha;
             if (red.length == 1)
@@ -109,7 +109,7 @@ module fairygui {
                 return parseInt(str, 16);
         }
 
-        public static displayObjectToGObject(obj: egret.DisplayObject): GObject {
+        public static displayObjectToGObject(obj: egret.DisplayObject): GObject|null {
             while (obj != null && !(obj instanceof egret.Stage)) {
                 if (obj["$owner"])
                     return <GObject><any>obj["$owner"];

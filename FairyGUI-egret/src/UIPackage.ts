@@ -30,14 +30,14 @@ module fairygui {
             return UIPackage._packageInstByName[name];
         }
 
-        public static addPackage(resKey: string, descData: ArrayBuffer = null): UIPackage {
+        public static addPackage(resKey: string, descData: ArrayBuffer|null = null): UIPackage {
             if (!descData) {
                 descData = RES.getRes(resKey);
                 if (!descData)
                     throw "Resource '" + resKey + "' not found, please check default.res.json!";
             }
 
-            var pkg: UIPackage = new UIPackage();
+            let pkg: UIPackage = new UIPackage();
             pkg.loadPackage(new ByteBuffer(descData), resKey);
             UIPackage._packageInstById[pkg.id] = pkg;
             UIPackage._packageInstByName[pkg.name] = pkg;
@@ -46,7 +46,7 @@ module fairygui {
         }
 
         public static removePackage(packageId: string): void {
-            var pkg: UIPackage = UIPackage._packageInstById[packageId];
+            let pkg: UIPackage = UIPackage._packageInstById[packageId];
             pkg.dispose();
             delete UIPackage._packageInstById[pkg.id];
             if (pkg._customId != null)
@@ -54,55 +54,56 @@ module fairygui {
             delete UIPackage._packageInstByName[pkg.name];
         }
 
-        public static createObject(pkgName: string, resName: string, userClass: any = null): GObject {
-            var pkg: UIPackage = UIPackage.getByName(pkgName);
+        public static createObject(pkgName: string, resName: string, userClass: any = null): GObject|null {
+            let pkg: UIPackage = UIPackage.getByName(pkgName);
             if (pkg)
                 return pkg.createObject(resName, userClass);
             else
                 return null;
         }
 
-        public static createObjectFromURL(url: string, userClass: any = null): GObject {
-            var pi: PackageItem = UIPackage.getItemByURL(url);
+        public static createObjectFromURL(url: string, userClass: any = null): GObject|null {
+            let pi: PackageItem|null = UIPackage.getItemByURL(url);
             if (pi)
                 return pi.owner.internalCreateObject(pi, userClass);
             else
                 return null;
         }
 
-        public static getItemURL(pkgName: string, resName: string): string {
-            var pkg: UIPackage = UIPackage.getByName(pkgName);
+        public static getItemURL(pkgName: string, resName: string): string|null {
+            let pkg: UIPackage = UIPackage.getByName(pkgName);
             if (!pkg)
                 return null;
 
-            var pi: PackageItem = pkg._itemsByName[resName];
+            let pi: PackageItem = pkg._itemsByName[resName];
             if (!pi)
                 return null;
 
             return "ui://" + pkg.id + pi.id;
         }
 
-        public static getItemByURL(url: string): PackageItem {
-            var pos1: number = url.indexOf("//");
+        public static getItemByURL(url: string): PackageItem|null {
+            let pos1: number = url.indexOf("//");
             if (pos1 == -1)
                 return null;
 
-            var pos2: number = url.indexOf("/", pos1 + 2);
+            let pos2: number = url.indexOf("/", pos1 + 2);
+            let pkg: UIPackage;
             if (pos2 == -1) {
                 if (url.length > 13) {
-                    var pkgId: string = url.substr(5, 8);
-                    var pkg: UIPackage = UIPackage.getById(pkgId);
+                    let pkgId: string = url.substr(5, 8);
+                    pkg = UIPackage.getById(pkgId);
                     if (pkg != null) {
-                        var srcId: string = url.substr(13);
+                        let srcId: string = url.substr(13);
                         return pkg.getItemById(srcId);
                     }
                 }
             }
             else {
-                var pkgName: string = url.substr(pos1 + 2, pos2 - pos1 - 2);
+                let pkgName: string = url.substr(pos1 + 2, pos2 - pos1 - 2);
                 pkg = UIPackage.getByName(pkgName);
                 if (pkg != null) {
-                    var srcName: string = url.substr(pos2 + 1);
+                    let srcName: string = url.substr(pos2 + 1);
                     return pkg.getItemByName(srcName);
                 }
             }
@@ -110,20 +111,20 @@ module fairygui {
             return null;
         }
 
-        public static normalizeURL(url: string): string {
+        public static normalizeURL(url: string): string|null {
             if (url == null)
                 return null;
 
-            var pos1: number = url.indexOf("//");
+            let pos1: number = url.indexOf("//");
             if (pos1 == -1)
                 return null;
 
-            var pos2: number = url.indexOf("/", pos1 + 2);
+            let pos2: number = url.indexOf("/", pos1 + 2);
             if (pos2 == -1)
                 return url;
 
-            var pkgName: string = url.substr(pos1 + 2, pos2 - pos1 - 2);
-            var srcName: string = url.substr(pos2 + 1);
+            let pkgName: string = url.substr(pos1 + 2, pos2 - pos1 - 2);
+            let srcName: string = url.substr(pos2 + 1);
             return UIPackage.getItemURL(pkgName, srcName);
         }
 
@@ -136,26 +137,26 @@ module fairygui {
                 throw "FairyGUI: old package format found in '" + resKey + "'";
 
             buffer.version = buffer.readInt();
-            var compressed: boolean = buffer.readBool();
+            let compressed: boolean = buffer.readBool();
             this._id = buffer.readUTF();
             this._name = buffer.readUTF();
             buffer.skip(20);
 
             if (compressed) {
-                var buf: Uint8Array = new Uint8Array(buffer.buffer, buffer.position, buffer.length - buffer.position);
-                var inflater: Zlib.RawInflate = new Zlib.RawInflate(buf);
+                let buf: Uint8Array = new Uint8Array(buffer.buffer, buffer.position, buffer.length - buffer.position);
+                let inflater: Zlib.RawInflate = new Zlib.RawInflate(buf);
                 buffer = new ByteBuffer(inflater.decompress());
             }
 
-            var indexTablePos: number = buffer.position;
-            var cnt: number;
-            var i: number;
-            var nextPos: number;
+            let indexTablePos: number = buffer.position;
+            let cnt: number;
+            let i: number;
+            let nextPos: number;
 
             buffer.seek(indexTablePos, 4);
 
             cnt = buffer.readInt();
-            var stringTable: Array<string> = new Array<string>(cnt);
+            let stringTable: Array<string> = new Array<string>(cnt);
             stringTable.reduceRight
             for (i = 0; i < cnt; i++)
                 stringTable[i] = buffer.readUTF();
@@ -163,7 +164,7 @@ module fairygui {
 
             buffer.seek(indexTablePos, 1);
 
-            var pi: PackageItem;
+            let pi: PackageItem;
             resKey = resKey + "_";
 
             cnt = buffer.readShort();
@@ -174,10 +175,10 @@ module fairygui {
                 pi = new PackageItem();
                 pi.owner = this;
                 pi.type = buffer.readByte();
-                pi.id = buffer.readS();
-                pi.name = buffer.readS();
+                pi.id = <string>buffer.readS();
+                pi.name = <string>buffer.readS();
                 buffer.readS(); //path
-                pi.file = buffer.readS();
+                pi.file = <string>buffer.readS();
                 buffer.readBool();//exported
                 pi.width = buffer.readInt();
                 pi.height = buffer.readInt();
@@ -186,7 +187,7 @@ module fairygui {
                     case PackageItemType.Image:
                         {
                             pi.objectType = ObjectType.Image;
-                            var scaleOption: number = buffer.readByte();
+                            let scaleOption: number = buffer.readByte();
                             if (scaleOption == 1) {
                                 pi.scale9Grid = new egret.Rectangle();
                                 pi.scale9Grid.x = buffer.readInt();
@@ -219,7 +220,7 @@ module fairygui {
 
                     case PackageItemType.Component:
                         {
-                            var extension: number = buffer.readByte();
+                            let extension: number = buffer.readByte();
                             if (extension > 0)
                                 pi.objectType = extension;
                             else
@@ -253,10 +254,10 @@ module fairygui {
                 nextPos = buffer.readShort();
                 nextPos += buffer.position;
 
-                var itemId: string = buffer.readS();
-                pi = this._itemsById[buffer.readS()];
+                let itemId: string = <string>buffer.readS();
+                pi = this._itemsById[<string>buffer.readS()];
 
-                var sprite: AtlasSprite = new AtlasSprite();
+                let sprite: AtlasSprite = new AtlasSprite();
                 sprite.atlas = pi;
                 sprite.rect.x = buffer.readInt();
                 sprite.rect.y = buffer.readInt();
@@ -288,15 +289,15 @@ module fairygui {
         }
 
         public dispose(): void {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var pi: PackageItem = this._items[i];
-                var texture: egret.Texture = pi.texture;
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let pi: PackageItem = this._items[i];
+                let texture: egret.Texture|null = pi.texture;
                 if (texture != null)
                     texture.dispose();
                 else if (pi.frames != null) {
-                    var frameCount: number = pi.frames.length;
-                    for (var j: number = 0; j < frameCount; j++) {
+                    let frameCount: number = pi.frames.length;
+                    for (let j: number = 0; j < frameCount; j++) {
                         texture = pi.frames[j].texture;
                         if (texture != null)
                             texture.dispose();
@@ -325,16 +326,16 @@ module fairygui {
                 UIPackage._packageInstById[this._customId] = this;
         }
 
-        public createObject(resName: string, userClass: any = null): GObject {
-            var pi: PackageItem = this._itemsByName[resName];
+        public createObject(resName: string, userClass: any = null): GObject|null {
+            let pi: PackageItem = this._itemsByName[resName];
             if (pi)
                 return this.internalCreateObject(pi, userClass);
             else
                 return null;
         }
 
-        public internalCreateObject(item: fairygui.PackageItem, userClass: any = null): GObject {
-            var g: GObject;
+        public internalCreateObject(item: fairygui.PackageItem, userClass: any = null): GObject|null {
+            let g: GObject|null = null;
             if (item.type == PackageItemType.Component) {
                 if (userClass != null)
                     g = new userClass();
@@ -363,7 +364,7 @@ module fairygui {
         }
 
         public getItemAssetByName(resName: string): any {
-            var pi: PackageItem = this._itemsByName[resName];
+            let pi: PackageItem = this._itemsByName[resName];
             if (pi == null) {
                 throw "Resource not found -" + resName;
             }
@@ -376,7 +377,7 @@ module fairygui {
                 case PackageItemType.Image:
                     if (!item.decoded) {
                         item.decoded = true;
-                        var sprite: AtlasSprite = this._sprites[item.id];
+                        let sprite: AtlasSprite = this._sprites[item.id];
                         if (sprite != null)
                             item.texture = this.createSpriteTexture(sprite);
                     }
@@ -425,23 +426,20 @@ module fairygui {
             }
         }
 
-        private createSpriteTexture(sprite: AtlasSprite): egret.Texture {
-            var atlasTexture: egret.Texture = this.getItemAsset(sprite.atlas);
+        private createSpriteTexture(sprite: AtlasSprite): egret.Texture|null {
+            let atlasTexture: egret.Texture = this.getItemAsset(sprite.atlas);
             if (atlasTexture == null)
                 return null;
             else
                 return this.createSubTexture(atlasTexture, sprite.rect);
         }
 
-        private createSubTexture(atlasTexture: egret.Texture, uvRect: egret.Rectangle): egret.Texture {
-            var texture: egret.Texture = new egret.Texture();
-            if (atlasTexture["_bitmapData"]) {
-                texture["_bitmapData"] = atlasTexture["_bitmapData"];
-                texture.$initData(atlasTexture["_bitmapX"] + uvRect.x, atlasTexture["_bitmapY"] + uvRect.y,
-                    uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height,
-                    atlasTexture["_sourceWidth"], atlasTexture["_sourceHeight"]);
+        private createSubTexture(atlasTexture: egret.Texture|null, uvRect: egret.Rectangle): egret.Texture|null {
+            if(atlasTexture == null){
+                return null;
             }
-            else {
+            let texture: egret.Texture = new egret.Texture();
+            if (atlasTexture.bitmapData) {
                 texture.bitmapData = atlasTexture.bitmapData;
                 texture.$initData(atlasTexture["$bitmapX"] + uvRect.x, atlasTexture["$bitmapY"] + uvRect.y,
                     uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height,
@@ -452,7 +450,7 @@ module fairygui {
         }
 
         private loadMovieClip(item: PackageItem): void {
-            var buffer: ByteBuffer = item.rawData;
+            let buffer: ByteBuffer = item.rawData;
 
             buffer.seek(0, 0);
 
@@ -462,15 +460,15 @@ module fairygui {
 
             buffer.seek(0, 1);
 
-            var frameCount: number = buffer.readShort();
+            let frameCount: number = buffer.readShort();
             item.frames = Array<Frame>(frameCount);
 
-            var spriteId: string;
-            var frame: Frame;
-            var sprite: AtlasSprite;
+            let spriteId: string|null;
+            let frame: Frame;
+            let sprite: AtlasSprite;
 
-            for (var i: number = 0; i < frameCount; i++) {
-                var nextPos: number = buffer.readShort();
+            for (let i: number = 0; i < frameCount; i++) {
+                let nextPos: number = buffer.readShort();
                 nextPos += buffer.position;
 
                 frame = new Frame();
@@ -490,9 +488,9 @@ module fairygui {
         }
 
         private loadFont(item: PackageItem): void {
-            var font: BitmapFont = new BitmapFont();
+            let font: BitmapFont = new BitmapFont();
             item.bitmapFont = font;
-            var buffer: ByteBuffer = item.rawData;
+            let buffer: ByteBuffer = item.rawData;
 
             buffer.seek(0, 0);
 
@@ -501,29 +499,29 @@ module fairygui {
             font.resizable = buffer.readBool();
             buffer.readBool(); //has channel
             font.size = buffer.readInt();
-            var xadvance: number = buffer.readInt();
-            var lineHeight: number = buffer.readInt();
+            let xadvance: number = buffer.readInt();
+            let lineHeight: number = buffer.readInt();
 
-            var mainTexture: egret.Texture = null;
-            var mainSprite: AtlasSprite = this._sprites[item.id];
+            let mainTexture: egret.Texture|null = null;
+            let mainSprite: AtlasSprite = this._sprites[item.id];
             if (mainSprite != null)
                 mainTexture = <egret.Texture>(this.getItemAsset(mainSprite.atlas));
 
             buffer.seek(0, 1);
 
-            var bg: BMGlyph = null;
-            var cnt: number = buffer.readInt();
-            for (var i: number = 0; i < cnt; i++) {
-                var nextPos: number = buffer.readShort();
+            let bg: BMGlyph|null = null;
+            let cnt: number = buffer.readInt();
+            for (let i: number = 0; i < cnt; i++) {
+                let nextPos: number = buffer.readShort();
                 nextPos += buffer.position;
 
                 bg = new BMGlyph();
-                var ch: string = buffer.readChar();
+                let ch: string = buffer.readChar();
                 font.glyphs[ch] = bg;
 
-                var img: string = buffer.readS();
-                var bx: number = buffer.readInt();
-                var by: number = buffer.readInt();
+                let img: string = <string>buffer.readS();
+                let bx: number = buffer.readInt();
+                let by: number = buffer.readInt();
                 bg.offsetX = buffer.readInt();
                 bg.offsetY = buffer.readInt();
                 bg.width = buffer.readInt();
@@ -538,7 +536,7 @@ module fairygui {
                     bg.channel = 1;
 
                 if (!font.ttf) {
-                    var charImg: PackageItem = this._itemsById[img];
+                    let charImg: PackageItem = this._itemsById[img];
                     if (charImg) {
                         this.getItemAsset(charImg);
                         bg.width = charImg.width;

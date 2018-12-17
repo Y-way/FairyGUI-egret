@@ -5,7 +5,7 @@ module fairygui {
         private _owner: GObject;
         private _items: Array<RelationItem>;
 
-        public handling: GObject;
+        public handling: GObject|null;
         public sizeDirty: boolean;
 
         public constructor(owner: GObject) {
@@ -14,25 +14,25 @@ module fairygui {
         }
 
         public add(target: GObject, relationType: number, usePercent: boolean = false): void {
-            var length: number = this._items.length;
-            for (var i: number = 0; i < length; i++) {
-                var item: RelationItem = this._items[i];
+            let length: number = this._items.length;
+            for (let i: number = 0; i < length; i++) {
+                let item: RelationItem = this._items[i];
                 if (item.target == target) {
                     item.add(relationType, usePercent);
                     return;
                 }
             }
-            var newItem: RelationItem = new RelationItem(this._owner);
+            let newItem: RelationItem = new RelationItem(this._owner);
             newItem.target = target;
             newItem.add(relationType, usePercent);
             this._items.push(newItem);
         }
 
         public remove(target: GObject, relationType: number = 0): void {
-            var cnt: number = this._items.length;
-            var i: number = 0;
+            let cnt: number = this._items.length;
+            let i: number = 0;
             while (i < cnt) {
-                var item: RelationItem = this._items[i];
+                let item: RelationItem = this._items[i];
                 if (item.target == target) {
                     item.remove(relationType);
                     if (item.isEmpty) {
@@ -49,9 +49,9 @@ module fairygui {
         }
 
         public contains(target: GObject): boolean {
-            var length: number = this._items.length;
-            for (var i: number = 0; i < length; i++) {
-                var item: RelationItem = this._items[i];
+            let length: number = this._items.length;
+            for (let i: number = 0; i < length; i++) {
+                let item: RelationItem = this._items[i];
                 if (item.target == target)
                     return true;
             }
@@ -59,10 +59,10 @@ module fairygui {
         }
 
         public clearFor(target: GObject): void {
-            var cnt: number = this._items.length;
-            var i: number = 0;
+            let cnt: number = this._items.length;
+            let i: number = 0;
             while (i < cnt) {
-                var item: RelationItem = this._items[i];
+                let item: RelationItem = this._items[i];
                 if (item.target == target) {
                     item.dispose();
                     this._items.splice(i, 1);
@@ -74,9 +74,9 @@ module fairygui {
         }
 
         public clearAll(): void {
-            var length: number = this._items.length;
-            for (var i: number = 0; i < length; i++) {
-                var item: RelationItem = this._items[i];
+            let length: number = this._items.length;
+            for (let i: number = 0; i < length; i++) {
+                let item: RelationItem = this._items[i];
                 item.dispose();
             }
             this._items.length = 0;
@@ -85,11 +85,11 @@ module fairygui {
         public copyFrom(source: Relations): void {
             this.clearAll();
 
-            var arr: Array<RelationItem> = source._items;
-            var length: number = arr.length;
-            for (var i: number = 0; i < length; i++) {
-                var ri: RelationItem = arr[i];
-                var item: RelationItem = new RelationItem(this._owner);
+            let arr: Array<RelationItem> = source._items;
+            let length: number = arr.length;
+            for (let i: number = 0; i < length; i++) {
+                let ri: RelationItem = arr[i];
+                let item: RelationItem = new RelationItem(this._owner);
                 item.copyFrom(ri);
                 this._items.push(item);
             }
@@ -103,9 +103,9 @@ module fairygui {
             if (this._items.length == 0)
                 return;
 
-            var length: number = this._items.length;
-            for (var i: number = 0; i < length; i++) {
-                var item: RelationItem = this._items[i];
+            let length: number = this._items.length;
+            for (let i: number = 0; i < length; i++) {
+                let item: RelationItem = this._items[i];
                 item.applyOnSelfResized(dWidth, dHeight, applyPivot);
             }
         }
@@ -115,10 +115,10 @@ module fairygui {
                 return;
 
             this.sizeDirty = false;
-            var length: number = this._items.length;
-            for (var i: number = 0; i < length; i++) {
-                var item: RelationItem = this._items[i];
-                item.target.ensureSizeCorrect();
+            let length: number = this._items.length;
+            for (let i: number = 0; i < length; i++) {
+                let item: RelationItem = this._items[i];
+                (item.target as GObject).ensureSizeCorrect();
             }
         }
 
@@ -127,25 +127,25 @@ module fairygui {
         }
 
         public setup(buffer: ByteBuffer, parentToChild: boolean): void {
-            var cnt: number = buffer.readByte();
-            var target: GObject;
-            for (var i: number = 0; i < cnt; i++) {
-                var targetIndex: number = buffer.readShort();
+            let cnt: number = buffer.readByte();
+            let target: GObject|null;
+            for (let i: number = 0; i < cnt; i++) {
+                let targetIndex: number = buffer.readShort();
                 if (targetIndex == -1)
                     target = this._owner.parent;
                 else if (parentToChild)
                     target = (<GComponent>this._owner).getChildAt(targetIndex);
                 else
-                    target = this._owner.parent.getChildAt(targetIndex);
+                    target = (this._owner.parent as GComponent).getChildAt(targetIndex);
 
-                var newItem: RelationItem = new RelationItem(this._owner);
+                let newItem: RelationItem = new RelationItem(this._owner);
                 newItem.target = target;
                 this._items.push(newItem);
 
-                var cnt2: number = buffer.readByte();
-                for (var j: number = 0; j < cnt2; j++) {
-                    var rt: number = buffer.readByte();
-                    var usePercent: boolean = buffer.readBool();
+                let cnt2: number = buffer.readByte();
+                for (let j: number = 0; j < cnt2; j++) {
+                    let rt: number = buffer.readByte();
+                    let usePercent: boolean = buffer.readBool();
                     newItem.internalAdd(rt, usePercent);
                 }
             }

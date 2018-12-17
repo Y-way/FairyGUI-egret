@@ -11,7 +11,7 @@ module fairygui {
         private _totalTasks: number = 0;
         private _playing: boolean = false;
         private _paused: boolean = false;
-        private _onComplete: Function;
+        private _onComplete: Function|null;
         private _onCompleteCaller: any;
         private _onCompleteParam: any;
         private _options: number = 0;
@@ -33,12 +33,12 @@ module fairygui {
             this._items = new Array<TransitionItem>();
         }
 
-        public play(onComplete: Function = null, onCompleteObj: any = null, onCompleteParam: any = null,
+        public play(onComplete: Function|null = null, onCompleteObj: any = null, onCompleteParam: any = null,
             times: number = 1, delay: number = 0, startTime: number = 0, endTime: number = -1) {
             this._play(onComplete, onCompleteObj, onCompleteParam, times, delay, startTime, endTime, false);
         }
 
-        public playReverse(onComplete: Function = null, onCompleteObj: any = null, onCompleteParam: any = null,
+        public playReverse(onComplete: Function|null = null, onCompleteObj: any = null, onCompleteParam: any = null,
             times: number = 1, delay: number = 0) {
             this._play(onComplete, onCompleteObj, onCompleteParam, times, delay, 0, -1, true);
         }
@@ -64,7 +64,7 @@ module fairygui {
             }
         }
 
-        private _play(onComplete: Function = null, onCompleteCaller: any = null, onCompleteParam: any = null,
+        private _play(onComplete: Function|null = null, onCompleteCaller: any = null, onCompleteParam: any = null,
             times: number = 1, delay: number = 0, startTime: number = 0, endTime: number = -1, reversed: boolean = false) {
             this.stop(true, true);
 
@@ -78,9 +78,9 @@ module fairygui {
             this._onCompleteParam = onCompleteParam;
             this._onCompleteCaller = onCompleteCaller;
 
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.target == null) {
                     if (item.targetId)
                         item.target = this._owner.getChildById(item.targetId);
@@ -91,15 +91,15 @@ module fairygui {
                     item.target = null;
 
                 if (item.target != null && item.type == TransitionActionType.Transition) {
-                    var trans: Transition = (item.target as GComponent).getTransition(item.value.transName);
+                    let trans: Transition|null = (item.target as GComponent).getTransition(item.value.transName);
                     if (trans == this)
                         trans = null;
                     if (trans != null) {
                         if (item.value.playTimes == 0) //stop
                         {
-                            var j: number;
+                            let j: number;
                             for (j = i - 1; j >= 0; j--) {
-                                var item2: TransitionItem = this._items[j];
+                                let item2: TransitionItem = this._items[j];
                                 if (item2.type == TransitionActionType.Transition) {
                                     if (item2.value.trans == trans) {
                                         item2.value.stopTime = item.time - item2.time;
@@ -132,19 +132,20 @@ module fairygui {
             this._playing = false;
             this._totalTasks = 0;
             this._totalTimes = 0;
-            var func: Function = this._onComplete;
-            var param: any = this._onCompleteParam;
-            var thisObj: any = this._onCompleteCaller;
+            let func: Function|null = this._onComplete;
+            let param: any = this._onCompleteParam;
+            let thisObj: any = this._onCompleteCaller;
             this._onComplete = null;
             this._onCompleteParam = null;
             this._onCompleteCaller = null;
 
             GTween.kill(this);//delay start
 
-            var cnt: number = this._items.length;
+            let cnt: number = this._items.length;
+            let item: TransitionItem;
             if (this._reversed) {
-                for (var i: number = cnt - 1; i >= 0; i--) {
-                    var item: TransitionItem = this._items[i];
+                for (let i: number = cnt - 1; i >= 0; i--) {
+                    item = this._items[i];
                     if (item.target == null)
                         continue;
 
@@ -152,7 +153,7 @@ module fairygui {
                 }
             }
             else {
-                for (i = 0; i < cnt; i++) {
+                for (let i:number = 0; i < cnt; i++) {
                     item = this._items[i];
                     if (item.target == null)
                         continue;
@@ -167,6 +168,9 @@ module fairygui {
         }
 
         private stopItem(item: TransitionItem, setToComplete: boolean): void {
+            if(item.target == null){
+                return;
+            }
             if (item.displayLockToken != 0) {
                 item.target.releaseDisplayLock(item.displayLockToken);
                 item.displayLockToken = 0;
@@ -185,7 +189,7 @@ module fairygui {
             }
 
             if (item.type == TransitionActionType.Transition) {
-                var trans: Transition = item.value.trans;
+                let trans: Transition = item.value.trans;
                 if (trans != null)
                     trans.stop(setToComplete, false);
             }
@@ -196,13 +200,13 @@ module fairygui {
                 return;
 
             this._paused = paused;
-            var tweener: GTweener = GTween.getTween(this);
+            let tweener: GTweener|null = GTween.getTween(this);
             if (tweener != null)
                 tweener.setPaused(paused);
 
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.target == null)
                     continue;
 
@@ -228,9 +232,9 @@ module fairygui {
             if (this._playing)
                 GTween.kill(this);//delay start
 
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.tweener != null) {
                     item.tweener.kill();
                     item.tweener = null;
@@ -254,10 +258,10 @@ module fairygui {
         }
 
         public setValue(label: string, ...args): void {
-            var cnt: number = this._items.length;
-            var value: any;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            let value: any;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.label == label) {
                     if (item.tweenConfig != null)
                         value = item.tweenConfig.startValue;
@@ -338,9 +342,9 @@ module fairygui {
         }
 
         public setHook(label: string, callback: Function, caller: any): void {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.label == label) {
                     item.hook = callback;
                     item.hookCaller = caller;
@@ -355,9 +359,9 @@ module fairygui {
         }
 
         public clearHooks(): void {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 item.hook = null;
                 item.hookCaller = null;
                 if (item.tweenConfig != null) {
@@ -368,9 +372,9 @@ module fairygui {
         }
 
         public setTarget(label: string, newTarget: GObject): void {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.label == label) {
                     item.targetId = newTarget.id;
                     item.target = null;
@@ -379,18 +383,18 @@ module fairygui {
         }
 
         public setDuration(label: string, value: number): void {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.tweenConfig != null && item.label == label)
                     item.tweenConfig.duration = value;
             }
         }
 
         public getLabelTime(label: string): number {
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.label == label)
                     return item.time;
                 else if (item.tweenConfig != null && item.tweenConfig.endLabel == label)
@@ -408,9 +412,9 @@ module fairygui {
             if (this._timeScale != value) {
                 this._timeScale = value;
                 if (this._playing) {
-                    var cnt: number = this._items.length;
-                    for (var i: number = 0; i < cnt; i++) {
-                        var item: TransitionItem = this._items[i];
+                    let cnt: number = this._items.length;
+                    for (let i: number = 0; i < cnt; i++) {
+                        let item: TransitionItem = this._items[i];
                         if (item.tweener != null)
                             item.tweener.setTimeScale(value);
                         else if (item.type == TransitionActionType.Transition) {
@@ -427,12 +431,12 @@ module fairygui {
         }
 
         public updateFromRelations(targetId: string, dx: number, dy: number): void {
-            var cnt: number = this._items.length;
+            let cnt: number = this._items.length;
             if (cnt == 0)
                 return;
 
-            for (var i: number = 0; i < cnt; i++) {
-                var item: TransitionItem = this._items[i];
+            for (let i: number = 0; i < cnt; i++) {
+                let item: TransitionItem = this._items[i];
                 if (item.type == TransitionActionType.XY && item.targetId == targetId) {
                     if (item.tweenConfig != null) {
                         item.tweenConfig.startValue.f1 += dx;
@@ -464,18 +468,18 @@ module fairygui {
             this._playing = this._totalTasks > 0;
             if (this._playing) {
                 if ((this._options & Transition.OPTION_IGNORE_DISPLAY_CONTROLLER) != 0) {
-                    var cnt: number = this._items.length;
-                    for (var i: number = 0; i < cnt; i++) {
-                        var item: TransitionItem = this._items[i];
+                    let cnt: number = this._items.length;
+                    for (let i: number = 0; i < cnt; i++) {
+                        let item: TransitionItem = this._items[i];
                         if (item.target != null && item.target != this._owner)
                             item.displayLockToken = item.target.addDisplayLock();
                     }
                 }
             }
             else if (this._onComplete != null) {
-                var func: Function = this._onComplete;
-                var param: any = this._onCompleteParam;
-                var thisObj: any = this._onCompleteCaller;
+                let func: Function = this._onComplete;
+                let param: any = this._onCompleteParam;
+                let thisObj: any = this._onCompleteCaller;
                 this._onComplete = null;
                 this._onCompleteParam = null;
                 this._onCompleteCaller = null;
@@ -489,10 +493,10 @@ module fairygui {
 
             this._totalTasks = 0;
 
-            var cnt: number = this._items.length;
-            var item: TransitionItem;
-            var needSkipAnimations: boolean = false;
-            var i: number;
+            let cnt: number = this._items.length;
+            let item: TransitionItem;
+            let needSkipAnimations: boolean = false;
+            let i: number;
 
             if (!this._reversed) {
                 for (i = 0; i < cnt; i++) {
@@ -523,15 +527,15 @@ module fairygui {
         }
 
         private playItem(item: TransitionItem): void {
-            var time: number;
+            let time: number;
             if (item.tweenConfig != null) {
                 if (this._reversed)
                     time = (this._totalDuration - item.time - item.tweenConfig.duration);
                 else
                     time = item.time;
                 if (this._endTime == -1 || time <= this._endTime) {
-                    var startValue: TValue;
-                    var endValue: TValue;
+                    let startValue: TValue;
+                    let endValue: TValue;
                     if (this._reversed) {
                         startValue = item.tweenConfig.endValue;
                         endValue = item.tweenConfig.startValue;
@@ -566,8 +570,7 @@ module fairygui {
                                 endValue.f1, endValue.f2, endValue.f3, endValue.f4, item.tweenConfig.duration);
                             break;
                     }
-
-                    item.tweener.setDelay(time)
+                    (item.tweener as GTweener).setDelay(time)
                         .setEase(item.tweenConfig.easeType)
                         .setRepeat(item.tweenConfig.repeat, item.tweenConfig.yoyo)
                         .setTimeScale(this._timeScale)
@@ -577,7 +580,7 @@ module fairygui {
                         .onComplete(this.onTweenComplete, this);
 
                     if (this._endTime >= 0)
-                        item.tweener.setBreakpoint(this._endTime - time);
+                        (item.tweener as GTweener).setBreakpoint(this._endTime - time);
 
                     this._totalTasks++;
                 }
@@ -626,15 +629,15 @@ module fairygui {
         }
 
         private skipAnimations(): void {
-            var frame: number;
-            var playStartTime: number;
-            var playTotalTime: number;
-            var value: any;
-            var target: any;
-            var item: TransitionItem;
+            let frame: number;
+            let playStartTime: number;
+            let playTotalTime: number;
+            let value: any;
+            let target: any;
+            let item: TransitionItem;
 
-            var cnt: number = this._items.length;
-            for (var i: number = 0; i < cnt; i++) {
+            let cnt: number = this._items.length;
+            for (let i: number = 0; i < cnt; i++) {
                 item = this._items[i];
                 if (item.type != TransitionActionType.Animation || item.time > this._startTime)
                     continue;
@@ -648,7 +651,7 @@ module fairygui {
                 playStartTime = target.playing ? 0 : -1;
                 playTotalTime = 0;
 
-                for (var j: number = i; j < cnt; j++) {
+                for (let j: number = i; j < cnt; j++) {
                     item = this._items[j];
                     if (item.type != TransitionActionType.Animation || item.target != target || item.time > this._startTime)
                         continue;
@@ -690,7 +693,7 @@ module fairygui {
         }
 
         private onDelayedPlayItem(tweener: GTweener): void {
-            var item: TransitionItem = tweener.target as TransitionItem;
+            let item: TransitionItem = tweener.target as TransitionItem;
             item.tweener = null;
             this._totalTasks--;
 
@@ -701,12 +704,14 @@ module fairygui {
         }
 
         private onTweenStart(tweener: GTweener): void {
-            var item: TransitionItem = tweener.target as TransitionItem;
-
+            let item: TransitionItem = tweener.target as TransitionItem;
+            if(item.target == null) {
+                return;
+            }
             if (item.type == TransitionActionType.XY || item.type == TransitionActionType.Size) //位置和大小要到start才最终确认起始值
             {
-                var startValue: TValue;
-                var endValue: TValue;
+                let startValue: TValue;
+                let endValue: TValue;
 
                 if (this._reversed) {
                     startValue = item.tweenConfig.endValue;
@@ -753,7 +758,7 @@ module fairygui {
         }
 
         private onTweenUpdate(tweener: GTweener): void {
-            var item: TransitionItem = tweener.target as TransitionItem;
+            let item: TransitionItem = tweener.target as TransitionItem;
             switch (item.type) {
                 case TransitionActionType.XY:
                 case TransitionActionType.Size:
@@ -789,7 +794,7 @@ module fairygui {
         }
 
         private onTweenComplete(tweener: GTweener): void {
-            var item: TransitionItem = tweener.target as TransitionItem;
+            let item: TransitionItem = tweener.target as TransitionItem;
             item.tweener = null;
             this._totalTasks--;
 
@@ -828,9 +833,9 @@ module fairygui {
                     else {
                         this._playing = false;
 
-                        var cnt: number = this._items.length;
-                        for (var i: number = 0; i < cnt; i++) {
-                            var item: TransitionItem = this._items[i];
+                        let cnt: number = this._items.length;
+                        for (let i: number = 0; i < cnt; i++) {
+                            let item: TransitionItem = this._items[i];
                             if (item.target != null && item.displayLockToken != 0) {
                                 item.target.releaseDisplayLock(item.displayLockToken);
                                 item.displayLockToken = 0;
@@ -838,9 +843,9 @@ module fairygui {
                         }
 
                         if (this._onComplete != null) {
-                            var func: Function = this._onComplete;
-                            var param: any = this._onCompleteParam;
-                            var thisObj: any = this._onCompleteCaller;
+                            let func: Function = this._onComplete;
+                            let param: any = this._onCompleteParam;
+                            let thisObj: any = this._onCompleteCaller;
                             this._onComplete = null;
                             this._onCompleteParam = null;
                             this._onCompleteCaller = null;
@@ -852,12 +857,13 @@ module fairygui {
         }
 
         private applyValue(item: TransitionItem): void {
-            item.target._gearLocked = true;
+
+            (item.target as GObject)._gearLocked = true;
 
             switch (item.type) {
                 case TransitionActionType.XY:
                     if (item.target == this._owner) {
-                        var f1: number, f2: number;
+                        let f1: number, f2: number;
                         if (!item.value.b1)
                             f1 = item.target.x;
                         else
@@ -870,39 +876,39 @@ module fairygui {
                     }
                     else {
                         if (!item.value.b1)
-                            item.value.f1 = item.target.x;
+                            item.value.f1 = (item.target as GObject).x;
                         if (!item.value.b2)
-                            item.value.f2 = item.target.y;
-                        item.target.setXY(item.value.f1, item.value.f2);
+                            item.value.f2 = (item.target as GObject).y;
+                        (item.target as GObject).setXY(item.value.f1, item.value.f2);
                     }
                     break;
 
                 case TransitionActionType.Size:
                     if (!item.value.b1)
-                        item.value.f1 = item.target.width;
+                        item.value.f1 = (item.target as GObject).width;
                     if (!item.value.b2)
-                        item.value.f2 = item.target.height;
-                    item.target.setSize(item.value.f1, item.value.f2);
+                        item.value.f2 = (item.target as GObject).height;
+                    (item.target as GObject).setSize(item.value.f1, item.value.f2);
                     break;
 
                 case TransitionActionType.Pivot:
-                    item.target.setPivot(item.value.f1, item.value.f2, item.target.pivotAsAnchor);
+                    (item.target as GObject).setPivot(item.value.f1, item.value.f2, (item.target as GObject).pivotAsAnchor);
                     break;
 
                 case TransitionActionType.Alpha:
-                    item.target.alpha = item.value.f1;
+                    (item.target as GObject).alpha = item.value.f1;
                     break;
 
                 case TransitionActionType.Rotation:
-                    item.target.rotation = item.value.f1;
+                    (item.target as GObject).rotation = item.value.f1;
                     break;
 
                 case TransitionActionType.Scale:
-                    item.target.setScale(item.value.f1, item.value.f2);
+                    (item.target as GObject).setScale(item.value.f1, item.value.f2);
                     break;
 
                 case TransitionActionType.Skew:
-                    item.target.setSkew(item.value.f1, item.value.f2);
+                    (item.target as GObject).setSkew(item.value.f1, item.value.f2);
                     break;
 
                 case TransitionActionType.Color:
@@ -917,16 +923,16 @@ module fairygui {
                     break;
 
                 case TransitionActionType.Visible:
-                    item.target.visible = item.value.visible;
+                    (item.target as GObject).visible = item.value.visible;
                     break;
 
                 case TransitionActionType.Transition:
                     if (this._playing) {
-                        var trans: Transition = item.value.trans;
+                        let trans: Transition = item.value.trans;
                         if (trans != null) {
                             this._totalTasks++;
-                            var startTime: number = this._startTime > item.time ? (this._startTime - item.time) : 0;
-                            var endTime: number = this._endTime >= 0 ? (this._endTime - item.time) : -1;
+                            let startTime: number = this._startTime > item.time ? (this._startTime - item.time) : 0;
+                            let endTime: number = this._endTime >= 0 ? (this._endTime - item.time) : -1;
                             if (item.value.stopTime >= 0 && (endTime < 0 || endTime > item.value.stopTime))
                                 endTime = item.value.stopTime;
                             trans.timeScale = this._timeScale;
@@ -938,7 +944,7 @@ module fairygui {
                 case TransitionActionType.Sound:
                     if (this._playing && item.time >= this._startTime) {
                         if (item.value.audioClip == null) {
-                            var pi: PackageItem = UIPackage.getItemByURL(item.value.sound);
+                            let pi: PackageItem|null = UIPackage.getItemByURL(item.value.sound);
                             if (pi)
                                 item.value.audioClip = <egret.Sound>pi.owner.getItemAsset(pi);
                         }
@@ -948,66 +954,66 @@ module fairygui {
                     break;
 
                 case TransitionActionType.Shake:
-                    item.target.setXY(item.target.x - item.value.lastOffsetX + item.value.offsetX, item.target.y - item.value.lastOffsetY + item.value.offsetY);
+                    (item.target as GButton).setXY((item.target as GButton).x - item.value.lastOffsetX + item.value.offsetX, (item.target as GButton).y - item.value.lastOffsetY + item.value.offsetY);
                     item.value.lastOffsetX = item.value.offsetX;
                     item.value.lastOffsetY = item.value.offsetY;
                     break;
 
                 case TransitionActionType.ColorFilter:
                     {
-                        var arr: egret.Filter[] = item.target.filters;
-                        var cf: egret.ColorMatrixFilter;
+                        let arr: egret.Filter[] = (item.target as GButton).filters;
+                        let cf: egret.ColorMatrixFilter;
                         if (!arr || !(arr[0] instanceof egret.ColorMatrixFilter)) {
                             cf = new egret.ColorMatrixFilter();
                             arr = [cf];
                         }
                         else
                             cf = <egret.ColorMatrixFilter>arr[0];
-                        var cm: ColorMatrix = new ColorMatrix();
+                        let cm: ColorMatrix = new ColorMatrix();
                         cm.adjustBrightness(item.value.f1);
                         cm.adjustContrast(item.value.f2);
                         cm.adjustSaturation(item.value.f3);
                         cm.adjustHue(item.value.f4);
                         cf.matrix = cm.matrix;
-                        item.target.filters = arr;
+                        (item.target as GButton).filters = arr;
                         break;
                     }
                 case TransitionActionType.Text:
-                    item.target.text = item.value.text;
+                    (item.target as GButton).text = item.value.text;
                     break;
 
                 case TransitionActionType.Icon:
-                    item.target.icon = item.value.text;
+                    (item.target as GButton).icon = item.value.text;
                     break;
             }
 
-            item.target._gearLocked = false;
+            (item.target as GButton)._gearLocked = false;
         }
 
         public setup(buffer: ByteBuffer): void {
-            this.name = buffer.readS();
+            this.name = <string>buffer.readS();
             this._options = buffer.readInt();
             this._autoPlay = buffer.readBool();
             this._autoPlayTimes = buffer.readInt();
             this._autoPlayDelay = buffer.readFloat();
 
-            var cnt: number = buffer.readShort();
-            for (var i: number = 0; i < cnt; i++) {
-                var dataLen: number = buffer.readShort();
-                var curPos: number = buffer.position;
+            let cnt: number = buffer.readShort();
+            for (let i: number = 0; i < cnt; i++) {
+                let dataLen: number = buffer.readShort();
+                let curPos: number = buffer.position;
 
                 buffer.seek(curPos, 0);
 
-                var item: TransitionItem = new TransitionItem(buffer.readByte());
+                let item: TransitionItem = new TransitionItem(buffer.readByte());
                 this._items[i] = item;
 
                 item.time = buffer.readFloat();
-                var targetId: number = buffer.readShort();
+                let targetId: number = buffer.readShort();
                 if (targetId < 0)
                     item.targetId = "";
                 else
                     item.targetId = this._owner.getChildAt(targetId).id;
-                item.label = buffer.readS();
+                item.label = <string>buffer.readS();
 
                 if (buffer.readBool()) {
                     buffer.seek(curPos, 1);
@@ -1019,7 +1025,7 @@ module fairygui {
                     item.tweenConfig.easeType = buffer.readByte();
                     item.tweenConfig.repeat = buffer.readInt();
                     item.tweenConfig.yoyo = buffer.readBool();
-                    item.tweenConfig.endLabel = buffer.readS();
+                    item.tweenConfig.endLabel = <string>buffer.readS();
 
                     buffer.seek(curPos, 2);
 
@@ -1043,7 +1049,7 @@ module fairygui {
         }
 
         private decodeValue(item: TransitionItem, buffer: ByteBuffer, value: any): void {
-            var arr: Array<any>;
+            let arr: Array<any>;
             switch (item.type) {
                 case TransitionActionType.XY:
                 case TransitionActionType.Size:
@@ -1135,11 +1141,11 @@ module fairygui {
         public tweenConfig: TweenConfig;
         public label: string;
         public value: any;
-        public hook: Function;
+        public hook: Function|null;
         public hookCaller: any;
 
-        public tweener: GTweener;
-        public target: GObject;
+        public tweener: GTweener|null;
+        public target: GObject|null;
         public displayLockToken: number;
 
         public constructor(type: number) {
@@ -1194,7 +1200,7 @@ module fairygui {
         public startValue: TValue;
         public endValue: TValue;
         public endLabel: string;
-        public endHook: Function;
+        public endHook: Function|null;
         public endHookCaller: any;
 
         public constructor() {

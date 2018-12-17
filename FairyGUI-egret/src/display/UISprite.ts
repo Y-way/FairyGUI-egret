@@ -2,7 +2,7 @@
 module fairygui {
 
     export class UISprite extends egret.Sprite {
-        private _hitArea: egret.Rectangle;
+        private _hitArea: egret.Rectangle|null;
 
         public constructor() {
             super();
@@ -10,11 +10,11 @@ module fairygui {
             this.touchChildren = true;
         }
 
-        public get hitArea(): egret.Rectangle {
+        public get hitArea(): egret.Rectangle|null {
             return this._hitArea;
         }
 
-        public set hitArea(value: egret.Rectangle) {
+        public set hitArea(value: egret.Rectangle|null) {
             if (this._hitArea && value) {
                 this._hitArea.x = value.x;
                 this._hitArea.y = value.y;
@@ -25,15 +25,15 @@ module fairygui {
         }
 
         public $hitTest(stageX: number, stageY: number): egret.DisplayObject {
-            var ret: egret.DisplayObject = super.$hitTest(stageX, stageY);
+            let ret: egret.DisplayObject = super.$hitTest(stageX, stageY);
             if (ret == this) {
                 if (!this.touchEnabled || this._hitArea == null) //穿透
-                    return null;
+                    return <any>null;
             }
             else if (ret == null && this.touchEnabled && this._hitArea != null) {
-                var m = this.$getInvertedConcatenatedMatrix();
-                var localX = m.a * stageX + m.c * stageY + m.tx;
-                var localY = m.b * stageX + m.d * stageY + m.ty;
+                let m = this.$getInvertedConcatenatedMatrix();
+                let localX = m.a * stageX + m.c * stageY + m.tx;
+                let localY = m.b * stageX + m.d * stageY + m.ty;
                 if (this._hitArea.contains(localX, localY))
                     ret = this;
             }

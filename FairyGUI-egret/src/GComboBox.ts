@@ -4,9 +4,9 @@ module fairygui {
     export class GComboBox extends GComponent {
         public dropdown: GComponent;
 
-        protected _titleObject: GObject;
-        protected _iconObject: GObject;
-        protected _list: GList;
+        protected _titleObject: GObject|null;
+        protected _iconObject: GObject|null;
+        protected _list: GList|null;
 
         private _items: Array<string>;
         private _values: Array<string>;
@@ -15,9 +15,9 @@ module fairygui {
         private _visibleItemCount: number = 0;
         private _itemsUpdated: boolean;
         private _selectedIndex: number = 0;
-        private _buttonController: Controller;
+        private _buttonController: Controller|null;
         private _popupDirection: number = PopupDirection.Auto;
-        private _selectionController: Controller;
+        private _selectionController: Controller|null;
 
         private _over: boolean;
         private _down: boolean;
@@ -31,57 +31,57 @@ module fairygui {
             this._values = [];
         }
 
-        public get text(): string {
+        public get text(): string | null {
             if (this._titleObject)
                 return this._titleObject.text;
             else
                 return null;
         }
 
-        public set text(value: string) {
+        public set text(value: string | null) {
             if (this._titleObject)
                 this._titleObject.text = value;
             this.updateGear(6);
         }
 
-        public get icon(): string {
+        public get icon(): string | null {
             if (this._iconObject)
                 return this._iconObject.icon;
             else
                 return null;
         }
 
-        public set icon(value: string) {
+        public set icon(value: string | null) {
             if (this._iconObject)
                 this._iconObject.icon = value;
             this.updateGear(7);
         }
 
-public get titleColor(): number {
-            var tf:GTextField = this.getTextField();
-            if (tf!=null)
+        public get titleColor(): number {
+            let tf: GTextField|null = this.getTextField();
+            if (tf != null)
                 return tf.color;
             else
                 return 0;
         }
 
         public set titleColor(value: number) {
-            var tf:GTextField = this.getTextField();
-            if (tf!=null)
+            let tf: GTextField|null = this.getTextField();
+            if (tf != null)
                 tf.color = value;
         }
 
         public get titleFontSize(): number {
-            var tf:GTextField = this.getTextField();
-            if (tf!=null)
+            let tf: GTextField|null = this.getTextField();
+            if (tf != null)
                 return tf.fontSize;
             else
                 return 0;
         }
 
         public set titleFontSize(value: number) {
-            var tf:GTextField = this.getTextField();
-            if (tf!=null)
+            let tf: GTextField|null = this.getTextField();
+            if (tf != null)
                 tf.fontSize = value;
         }
 
@@ -181,25 +181,24 @@ public get titleColor(): number {
             this.selectedIndex = this._values.indexOf(val);
         }
 
-        public get selectionController(): Controller {
+        public get selectionController(): Controller|null {
             return this._selectionController;
         }
 
-        public set selectionController(value: Controller) {
+        public set selectionController(value: Controller|null) {
             this._selectionController = value;
         }
 
-        public getTextField():GTextField
-		{
-			 if (this._titleObject instanceof GTextField)
-				return (<GTextField>this._titleObject);
-			else if (this._titleObject instanceof GLabel)
-				return (<GLabel>this._titleObject).getTextField();
-			else if (this._titleObject instanceof GButton)
-				return (<GButton>this._titleObject).getTextField();
-			else
-				return null;
-		}
+        public getTextField(): GTextField|null {
+            if (this._titleObject instanceof GTextField)
+                return (<GTextField>this._titleObject);
+            else if (this._titleObject instanceof GLabel)
+                return (<GLabel>this._titleObject).getTextField();
+            else if (this._titleObject instanceof GButton)
+                return (<GButton>this._titleObject).getTextField();
+            else
+                return null;
+        }
 
         protected setState(val: string): void {
             if (this._buttonController)
@@ -207,7 +206,7 @@ public get titleColor(): number {
         }
 
         protected constructExtension(buffer: ByteBuffer): void {
-            var str: string;
+            let str: string|null;
 
             this._buttonController = this.getController("button");
             this._titleObject = this.getChild("title");
@@ -216,12 +215,12 @@ public get titleColor(): number {
             str = buffer.readS();
             if (str) {
                 this.dropdown = <GComponent><any>(UIPackage.createObjectFromURL(str));
-                if (!this.dropdown) {
+                if (this.dropdown == null) {
                     console.error("下拉框必须为元件");
                     return;
                 }
                 this.dropdown.name = "this.dropdown";
-                this._list = this.dropdown.getChild("list").asList;
+                this._list = this.dropdown.getChild("list") as GList
                 if (this._list == null) {
                     console.error(this.resourceURL + ": 下拉框的弹出元件里必须包含名为list的列表");
                     return;
@@ -256,7 +255,7 @@ public get titleColor(): number {
         private updateSelectionController(): void {
             if (this._selectionController != null && !this._selectionController.changing
                 && this._selectedIndex < this._selectionController.pageCount) {
-                var c: Controller = this._selectionController;
+                let c: Controller = this._selectionController;
                 this._selectionController = null;
                 c.selectedIndex = this._selectedIndex;
                 this._selectionController = c;
@@ -266,7 +265,7 @@ public get titleColor(): number {
         public dispose(): void {
             if (this.dropdown) {
                 this.dropdown.dispose();
-                this.dropdown = null;
+                this.dropdown = <any>null;
             }
 
             super.dispose();
@@ -281,17 +280,17 @@ public get titleColor(): number {
             if (buffer.readByte() != this.packageItem.objectType)
                 return;
 
-            var i: number;
-            var iv: number;
-            var nextPos: number;
-            var str: string;
-            var itemCount: number = buffer.readShort();
+            let i: number;
+            let iv: number;
+            let nextPos: number;
+            let str: string|null;
+            let itemCount: number = buffer.readShort();
             for (i = 0; i < itemCount; i++) {
                 nextPos = buffer.readShort();
                 nextPos += buffer.position;
 
-                this._items[i] = buffer.readS();
-                this._values[i] = buffer.readS();
+                this._items[i] = <string>buffer.readS();
+                this._values[i] = <string>buffer.readS();
                 str = buffer.readS();
                 if (str != null) {
                     if (this._icons == null)
@@ -327,17 +326,18 @@ public get titleColor(): number {
 
             iv = buffer.readShort();
             if (iv >= 0)
-                this._selectionController = this.parent.getControllerAt(iv);
+                this._selectionController = (this.parent as GComponent).getControllerAt(iv);
         }
 
         protected showDropdown(): void {
+            if(this._list == null)
+                return;
             if (this._itemsUpdated) {
                 this._itemsUpdated = false;
-
                 this._list.removeChildrenToPool();
-                var cnt: number = this._items.length;
-                for (var i: number = 0; i < cnt; i++) {
-                    var item: GObject = this._list.addItemFromPool();
+                let cnt: number = this._items.length;
+                for (let i: number = 0; i < cnt; i++) {
+                    let item: GObject = this._list.addItemFromPool();
                     item.name = i < this._values.length ? this._values[i] : "";
                     item.text = this._items[i];
                     item.icon = (this._icons != null && i < this._icons.length) ? this._icons[i] : null;
@@ -347,7 +347,7 @@ public get titleColor(): number {
             this._list.selectedIndex = -1;
             this.dropdown.width = this.width;
 
-            var downward: any = null;
+            let downward: any = null;
             if (this._popupDirection == PopupDirection.Down)
                 downward = true;
             else if (this._popupDirection == PopupDirection.Up)
@@ -366,7 +366,10 @@ public get titleColor(): number {
         }
 
         private __clickItem(evt: ItemEvent): void {
-            GTimers.inst.add(100, 1, this.__clickItem2, this, this._list.getChildIndex(evt.itemObject))
+            if(this._list == null) {
+                return;
+            }
+            GTimers.inst.add(100, 1, this.__clickItem2, this, this._list.getChildIndex(<GObject>evt.itemObject))
         }
 
         private __clickItem2(index: number): void {

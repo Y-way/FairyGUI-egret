@@ -1,6 +1,6 @@
 module fairygui {
     export class TweenManager {
-        private static _activeTweens: Array<GTweener> = new Array<GTweener>(30);
+        private static _activeTweens: Array<GTweener|null> = new Array<GTweener|null>(30);
         private static _tweenerPool: Array<GTweener> = new Array<GTweener>();
         private static _totalActiveTweens: number = 0;
         private static _lastTime: number = 0;
@@ -13,10 +13,10 @@ module fairygui {
                 TweenManager._lastTime = egret.getTimer();
             }
 
-            var tweener: GTweener;
-            var cnt: number = TweenManager._tweenerPool.length;
+            let tweener: GTweener;
+            let cnt: number = TweenManager._tweenerPool.length;
             if (cnt > 0) {
-                tweener = TweenManager._tweenerPool.pop();
+                tweener = TweenManager._tweenerPool.pop() as GTweener;
             }
             else
                 tweener = new GTweener();
@@ -33,9 +33,9 @@ module fairygui {
             if (target == null)
                 return false;
 
-            var anyType: boolean = propType == null || propType == undefined;
-            for (var i: number = 0; i < TweenManager._totalActiveTweens; i++) {
-                var tweener: GTweener = TweenManager._activeTweens[i];
+            let anyType: boolean = propType == null || propType == undefined;
+            for (let i: number = 0; i < TweenManager._totalActiveTweens; i++) {
+                let tweener: GTweener|null = TweenManager._activeTweens[i];
                 if (tweener != null && tweener.target == target && !tweener._killed
                     && (anyType || tweener._propType == propType))
                     return true;
@@ -48,11 +48,11 @@ module fairygui {
             if (target == null)
                 return false;
 
-            var flag: boolean = false;
-            var cnt: number = TweenManager._totalActiveTweens;
-            var anyType: boolean = propType == null || propType == undefined;
-            for (var i: number = 0; i < cnt; i++) {
-                var tweener: GTweener = TweenManager._activeTweens[i];
+            let flag: boolean = false;
+            let cnt: number = TweenManager._totalActiveTweens;
+            let anyType: boolean = propType == null || propType == undefined;
+            for (let i: number = 0; i < cnt; i++) {
+                let tweener: GTweener|null = TweenManager._activeTweens[i];
                 if (tweener != null && tweener.target == target && !tweener._killed
                     && (anyType || tweener._propType == propType)) {
                     tweener.kill(completed);
@@ -63,14 +63,14 @@ module fairygui {
             return flag;
         }
 
-        public static getTween(target: any, propType: any): GTweener {
+        public static getTween(target: any, propType: any): GTweener|null {
             if (target == null)
                 return null;
 
-            var cnt: number = TweenManager._totalActiveTweens;
-            var anyType: boolean = propType == null || propType == undefined;
-            for (var i: number = 0; i < cnt; i++) {
-                var tweener: GTweener = TweenManager._activeTweens[i];
+            let cnt: number = TweenManager._totalActiveTweens;
+            let anyType: boolean = propType == null || propType == undefined;
+            for (let i: number = 0; i < cnt; i++) {
+                let tweener: GTweener|null = TweenManager._activeTweens[i];
                 if (tweener != null && tweener.target == target && !tweener._killed
                     && (anyType || tweener._propType == propType)) {
                     return tweener;
@@ -81,16 +81,16 @@ module fairygui {
         }
 
         private static update(timestamp: number): boolean {
-            var dt: number = timestamp - TweenManager._lastTime;
+            let dt: number = timestamp - TweenManager._lastTime;
             TweenManager._lastTime = timestamp;
 
             dt /= 1000;
 
-            var cnt: number = TweenManager._totalActiveTweens;
-            var freePosStart: number = -1;
-            var freePosCount: number = 0;
-            for (var i: number = 0; i < cnt; i++) {
-                var tweener: GTweener = TweenManager._activeTweens[i];
+            let cnt: number = TweenManager._totalActiveTweens;
+            let freePosStart: number = -1;
+            let freePosCount: number = 0;
+            for (let i: number = 0; i < cnt; i++) {
+                let tweener: GTweener|null = TweenManager._activeTweens[i];
                 if (tweener == null) {
                     if (freePosStart == -1)
                         freePosStart = i;
@@ -120,9 +120,9 @@ module fairygui {
             if (freePosStart >= 0) {
                 if (TweenManager._totalActiveTweens != cnt) //new tweens added
                 {
-                    var j: number = cnt;
+                    let j: number = cnt;
                     cnt = TweenManager._totalActiveTweens - cnt;
-                    for (i = 0; i < cnt; i++)
+                    for (let i:number = 0; i < cnt; i++)
                         TweenManager._activeTweens[freePosStart++] = TweenManager._activeTweens[j++];
                 }
                 TweenManager._totalActiveTweens = freePosStart;

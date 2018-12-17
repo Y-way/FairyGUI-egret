@@ -3,7 +3,7 @@ module fairygui {
 
     export class PageOption {
         private _controller: Controller;
-        private _id: string;
+        private _id: string|null;
 
         public constructor() {
         }
@@ -16,7 +16,10 @@ module fairygui {
             this._id = this._controller.getPageId(pageIndex);
         }
 
-        public set name(pageName: string) {
+        public set name(pageName: string|null) {
+            if(!pageName){
+                return;
+            }
             this._id = this._controller.getPageIdByName(pageName);
         }
 
@@ -27,7 +30,7 @@ module fairygui {
                 return -1;
         }
 
-        public get name(): string {
+        public get name(): string|null {
             if (this._id)
                 return this._controller.getPageNameById(this._id);
             else
@@ -38,11 +41,11 @@ module fairygui {
             this._id = null;
         }
 
-        public set id(id: string) {
+        public set id(id: string|null) {
             this._id = id;
         }
 
-        public get id(): string {
+        public get id(): string|null {
             return this._id;
         }
     }

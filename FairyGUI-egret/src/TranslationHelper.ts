@@ -1,24 +1,24 @@
 module fairygui {
     export class TranslationHelper {
-        public static strings: Object = null;
+        public static strings: Object|null = null;
 
         public static loadFromXML(source: string): void {
             TranslationHelper.strings = {};
-            var xml: any = egret.XML.parse(source);
-            var nodes: any = xml.children;
-            var length1: number = nodes.length;
-            for (var i1: number = 0; i1 < length1; i1++) {
-                var cxml: any = nodes[i1];
+            let xml: any = egret.XML.parse(source);
+            let nodes: any = xml.children;
+            let length1: number = nodes.length;
+            for (let i1: number = 0; i1 < length1; i1++) {
+                let cxml: any = nodes[i1];
                 if (cxml.name == "string") {
-                    var key: string = cxml.attributes.name;
-                    var text: string = cxml.children.length > 0 ? cxml.children[0].text : "";
-                    var i: number = key.indexOf("-");
+                    let key: string = cxml.attributes.name;
+                    let text: string = cxml.children.length > 0 ? cxml.children[0].text : "";
+                    let i: number = key.indexOf("-");
                     if (i == -1)
                         continue;
 
-                    var key2: string = key.substr(0, i);
-                    var key3: string = key.substr(i + 1);
-                    var col: any = TranslationHelper.strings[key2];
+                    let key2: string = key.substr(0, i);
+                    let key3: string = key.substr(i + 1);
+                    let col: any = TranslationHelper.strings[key2];
                     if (!col) {
                         col = {};
                         TranslationHelper.strings[key2] = col;
@@ -32,32 +32,32 @@ module fairygui {
             if (TranslationHelper.strings == null)
                 return;
 
-            var compStrings: Object = TranslationHelper.strings[item.owner.id + item.id];
+            let compStrings: Object = TranslationHelper.strings[item.owner.id + item.id];
             if (compStrings == null)
                 return;
 
-            var elementId: string, value: string;
-            var buffer: ByteBuffer = item.rawData;
-            var nextPos: number;
-            var itemCount: number;
-            var i: number, j: number, k: number;
-            var dataLen: number;
-            var curPos: number;
-            var valueCnt: number;
-            var page: string;
+            let elementId: string, value: string;
+            let buffer: ByteBuffer = item.rawData;
+            let nextPos: number;
+            let itemCount: number;
+            let i: number, j: number, k: number;
+            let dataLen: number;
+            let curPos: number;
+            let valueCnt: number;
+            let page: string;
 
             buffer.seek(0, 2);
 
-            var childCount: number = buffer.readShort();
+            let childCount: number = buffer.readShort();
             for (i = 0; i < childCount; i++) {
                 dataLen = buffer.readShort();
                 curPos = buffer.position;
 
                 buffer.seek(curPos, 0);
 
-                var type: number = buffer.readByte();
+                let type: number = buffer.readByte();
                 buffer.skip(4);
-                elementId = buffer.readS();
+                elementId = <string>buffer.readS();
 
                 if (type == ObjectType.Component) {
                     if (buffer.seek(curPos, 6))
@@ -71,7 +71,7 @@ module fairygui {
 
                 buffer.seek(curPos, 2);
 
-                var gearCnt: number = buffer.readShort();
+                let gearCnt: number = buffer.readShort();
                 for (j = 0; j < gearCnt; j++) {
                     nextPos = buffer.readShort();
                     nextPos += buffer.position;
@@ -81,7 +81,7 @@ module fairygui {
                         buffer.skip(2);//controller
                         valueCnt = buffer.readShort();
                         for (k = 0; k < valueCnt; k++) {
-                            page = buffer.readS();
+                            page = <string>buffer.readS();
                             if (page != null) {
                                 if ((value = compStrings[elementId + "-texts_" + k]) != null)
                                     buffer.writeS(value);

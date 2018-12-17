@@ -31,7 +31,7 @@ module fairygui {
         private _pixelSnapping: boolean = false;
 
         private _relations: Relations;
-        private _group: GGroup;
+        private _group: GGroup|null;
         private _gears: GearBase[];
         private _displayObject: egret.DisplayObject;
         private _dragBounds: egret.Rectangle;
@@ -45,7 +45,7 @@ module fairygui {
         public maxWidth: number = 0;
         public maxHeight: number = 0;
 
-        public _parent: GComponent;
+        public _parent: GComponent|null;
         public _width: number = 0;
         public _height: number = 0;
         public _rawWidth: number = 0;
@@ -107,8 +107,8 @@ module fairygui {
 
         public setXY(xv: number, yv: number): void {
             if (this._x != xv || this._y != yv) {
-                var dx: number = xv - this._x;
-                var dy: number = yv - this._y;
+                let dx: number = xv - this._x;
+                let dy: number = yv - this._y;
                 this._x = xv;
                 this._y = yv;
 
@@ -164,12 +164,14 @@ module fairygui {
         }
 
         public center(restraint: boolean = false): void {
-            var r: GComponent;
+            let r: GComponent|null;
             if (this._parent != null)
                 r = this.parent;
             else
                 r = this.root;
-
+            if(r == null){
+                return;
+            }
             this.setXY((r.width - this.width) / 2, (r.height - this.height) / 2);
             if (restraint) {
                 this.addRelation(r, RelationType.Center_Center);
@@ -211,8 +213,8 @@ module fairygui {
                     wv = this.maxWidth;
                 if (this.maxHeight > 0 && hv > this.maxHeight)
                     hv = this.maxHeight;
-                var dWidth: number = wv - this._width;
-                var dHeight: number = hv - this._height;
+                let dWidth: number = wv - this._width;
+                let dHeight: number = hv - this._height;
                 this._width = wv;
                 this._height = hv;
 
@@ -351,8 +353,8 @@ module fairygui {
         private updatePivotOffset(): void {
             if (this._displayObject != null) {
                 if (this._pivotX != 0 || this._pivotY != 0) {
-                    var px: number;
-                    var py: number;
+                    let px: number;
+                    let py: number;
                     if (this._sizeImplType == 0) {
                         px = this._pivotX * this._width;
                         py = this._pivotY * this._height;
@@ -361,7 +363,7 @@ module fairygui {
                         px = this._pivotX * this.sourceWidth;
                         py = this._pivotY * this.sourceHeight;
                     }
-                    var pt: egret.Point = this._displayObject.matrix.transformPoint(px, py, GObject.sHelperPoint);
+                    let pt: egret.Point = this._displayObject.matrix.transformPoint(px, py, GObject.sHelperPoint);
                     this._pivotOffsetX = this._pivotX * this._width - (pt.x - this._displayObject.x);
                     this._pivotOffsetY = this._pivotY * this._height - (pt.y - this._displayObject.y);
                 }
@@ -439,7 +441,7 @@ module fairygui {
         }
 
         public get normalizeRotation(): number {
-            var rot: number = this._rotation % 360;
+            let rot: number = this._rotation % 360;
             if (rot > 180)
                 rot -= 360;
             else if (rot < -180)
@@ -488,7 +490,7 @@ module fairygui {
             if (value < 0)
                 value = 0;
             if (this._sortingOrder != value) {
-                var old: number = this._sortingOrder;
+                let old: number = this._sortingOrder;
                 this._sortingOrder = value;
                 if (this._parent != null)
                     this._parent.childSortingOrderChanged(this, old, this._sortingOrder);
@@ -508,7 +510,7 @@ module fairygui {
         }
 
         public requestFocus(): void {
-            var p: GObject = this;
+            let p: GObject|null = this;
             while (p && !p._focusable)
                 p = p.parent;
             if (p != null)
@@ -547,14 +549,14 @@ module fairygui {
             return this._displayObject != null && this._displayObject.stage != null;
         }
 
-        public get resourceURL(): string {
+        public get resourceURL(): string|null {
             if (this.packageItem != null)
                 return "ui://" + this.packageItem.owner.id + this.packageItem.id;
             else
                 return null;
         }
 
-        public set group(value: GGroup) {
+        public set group(value: GGroup|null) {
             if (this._group != value) {
                 if (this._group != null)
                     this._group.setBoundsChangedFlag(true);
@@ -564,12 +566,12 @@ module fairygui {
             }
         }
 
-        public get group(): GGroup {
+        public get group(): GGroup|null {
             return this._group;
         }
 
         public getGear(index: number): GearBase {
-            var gear: GearBase = this._gears[index];
+            let gear: GearBase = this._gears[index];
             if (gear == null) {
                 switch (index) {
                     case 0:
@@ -609,7 +611,7 @@ module fairygui {
             if (this._underConstruct || this._gearLocked)
                 return;
 
-            var gear: GearBase = this._gears[index];
+            let gear: GearBase = this._gears[index];
             if (gear != null && gear.controller != null)
                 gear.updateState();
         }
@@ -624,9 +626,9 @@ module fairygui {
         }
 
         public addDisplayLock(): number {
-            var gearDisplay: GearDisplay = <GearDisplay>this._gears[0];
+            let gearDisplay: GearDisplay = <GearDisplay>this._gears[0];
             if (gearDisplay && gearDisplay.controller) {
-                var ret: number = gearDisplay.addLock();
+                let ret: number = gearDisplay.addLock();
                 this.checkGearDisplay();
 
                 return ret;
@@ -636,7 +638,7 @@ module fairygui {
         }
 
         public releaseDisplayLock(token: number): void {
-            var gearDisplay: GearDisplay = <GearDisplay>this._gears[0];
+            let gearDisplay: GearDisplay = <GearDisplay>this._gears[0];
             if (gearDisplay && gearDisplay.controller) {
                 gearDisplay.releaseLock(token);
                 this.checkGearDisplay();
@@ -647,7 +649,7 @@ module fairygui {
             if (this._handlingController)
                 return;
 
-            var connected: boolean = this._gears[0] == null || (<GearDisplay>this._gears[0]).connected;
+            let connected: boolean = this._gears[0] == null || (<GearDisplay>this._gears[0]).connected;
             if (connected != this._internalVisible) {
                 this._internalVisible = connected;
                 if (this._parent)
@@ -687,11 +689,11 @@ module fairygui {
             this._displayObject = value;
         }
 
-        public get parent(): GComponent {
+        public get parent(): GComponent|null {
             return this._parent;
         }
 
-        public set parent(val: GComponent) {
+        public set parent(val: GComponent|null) {
             this._parent = val;
         }
 
@@ -704,7 +706,7 @@ module fairygui {
             if (this instanceof GRoot)
                 return <GRoot><any>this;
 
-            var p: GObject = this._parent;
+            let p: GObject|null = this._parent;
             while (p) {
                 if (p instanceof GRoot)
                     return <GRoot><any>p;
@@ -713,63 +715,63 @@ module fairygui {
             return GRoot.inst;
         }
 
-        public get asCom(): GComponent {
+        public get asCom(): GComponent|null {
             return (this instanceof GComponent) ? <GComponent><any>this : null;
         }
 
-        public get asButton(): GButton {
+        public get asButton(): GButton|null {
             return (this instanceof GButton) ? <GButton><any>this : null;
         }
 
-        public get asLabel(): GLabel {
+        public get asLabel(): GLabel|null {
             return (this instanceof GLabel) ? <GLabel><any>this : null;
         }
 
-        public get asProgress(): GProgressBar {
+        public get asProgress(): GProgressBar|null {
             return (this instanceof GProgressBar) ? <GProgressBar><any>this : null;
         }
 
-        public get asTextField(): GTextField {
+        public get asTextField(): GTextField|null {
             return (this instanceof GTextField) ? <GTextField><any>this : null;
         }
 
-        public get asRichTextField(): GRichTextField {
+        public get asRichTextField(): GRichTextField|null {
             return (this instanceof GRichTextField) ? <GRichTextField><any>this : null;
         }
 
-        public get asTextInput(): GTextInput {
+        public get asTextInput(): GTextInput|null {
             return (this instanceof GTextInput) ? <GTextInput><any>this : null;
         }
 
-        public get asLoader(): GLoader {
+        public get asLoader(): GLoader|null {
             return (this instanceof GLoader) ? <GLoader><any>this : null;
         }
 
-        public get asList(): GList {
+        public get asList(): GList|null {
             return (this instanceof GList) ? <GList><any>this : null;
         }
 
-        public get asGraph(): GGraph {
+        public get asGraph(): GGraph|null {
             return (this instanceof GGraph) ? <GGraph><any>this : null;
         }
 
-        public get asGroup(): GGroup {
+        public get asGroup(): GGroup|null {
             return (this instanceof GGroup) ? <GGroup><any>this : null;
         }
 
-        public get asSlider(): GSlider {
+        public get asSlider(): GSlider|null {
             return (this instanceof GSlider) ? <GSlider><any>this : null;
         }
 
-        public get asComboBox(): GComboBox {
+        public get asComboBox(): GComboBox|null {
             return (this instanceof GComboBox) ? <GComboBox><any>this : null;
         }
 
-        public get asImage(): GImage {
+        public get asImage(): GImage|null {
             return (this instanceof GImage) ? <GImage><any>this : null;
         }
 
-        public get asMovieClip(): GMovieClip {
+        public get asMovieClip(): GMovieClip|null {
             return (this instanceof GMovieClip) ? <GMovieClip><any>this : null;
         }
 
@@ -777,24 +779,24 @@ module fairygui {
             return <GObject><any>obj["$owner"];
         }
 
-        public get text(): string {
+        public get text(): string|null {
             return null;
         }
 
-        public set text(value: string) {
+        public set text(value: string|null) {
         }
 
-        public get icon(): string {
+        public get icon(): string|null {
             return null;
         }
 
-        public set icon(value: string) {
+        public set icon(value: string|null) {
         }
 
         public dispose(): void {
             this.removeFromParent();
             this._relations.dispose();
-            this._displayObject = null;
+            this._displayObject = <any>null;
         }
 
         public addClickListener(listener: Function, thisObj: any): void {
@@ -873,7 +875,7 @@ module fairygui {
         }
 
         public globalToLocal(ax: number = 0, ay: number = 0, resultPoint?: egret.Point): egret.Point {
-            var pt: egret.Point = this._displayObject.globalToLocal(ax, ay, resultPoint);
+            let pt: egret.Point = this._displayObject.globalToLocal(ax, ay, resultPoint);
             if (this._pivotAsAnchor) {
                 pt.x -= this._pivotX * this._width;
                 pt.y -= this._pivotY * this._height;
@@ -882,7 +884,7 @@ module fairygui {
         }
 
         public localToRoot(ax: number = 0, ay: number = 0, resultPoint?: egret.Point): egret.Point {
-            var pt: egret.Point = this._displayObject.localToGlobal(ax, ay, resultPoint);
+            let pt: egret.Point = this._displayObject.localToGlobal(ax, ay, resultPoint);
             pt.x /= GRoot.contentScaleFactor;
             pt.y /= GRoot.contentScaleFactor;
             return pt;
@@ -897,7 +899,7 @@ module fairygui {
         public localToGlobalRect(ax: number = 0, ay: number = 0, aWidth: number = 0, aHeight: number = 0, resultRect?: egret.Rectangle): egret.Rectangle {
             if (resultRect == null)
                 resultRect = new egret.Rectangle();
-            var pt: egret.Point = this.localToGlobal(ax, ay);
+            let pt: egret.Point = this.localToGlobal(ax, ay);
             resultRect.x = pt.x;
             resultRect.y = pt.y;
             pt = this.localToGlobal(ax + aWidth, ay + aHeight);
@@ -909,7 +911,7 @@ module fairygui {
         public globalToLocalRect(ax: number = 0, ay: number = 0, aWidth: number = 0, aHeight: number = 0, resultRect?: egret.Rectangle): egret.Rectangle {
             if (resultRect == null)
                 resultRect = new egret.Rectangle();
-            var pt: egret.Point = this.globalToLocal(ax, ay);
+            let pt: egret.Point = this.globalToLocal(ax, ay);
             resultRect.x = pt.x;
             resultRect.y = pt.y;
             pt = this.globalToLocal(ax + aWidth, ay + aHeight);
@@ -920,8 +922,8 @@ module fairygui {
 
         public handleControllerChanged(c: Controller): void {
             this._handlingController = true;
-            for (var i: number = 0; i < 8; i++) {
-                var gear: GearBase = this._gears[i];
+            for (let i: number = 0; i < 8; i++) {
+                let gear: GearBase = this._gears[i];
                 if (gear != null && gear.controller == c)
                     gear.apply();
             }
@@ -937,9 +939,9 @@ module fairygui {
             if (newObj == this._displayObject)
                 return;
 
-            var old: egret.DisplayObject = this._displayObject;
+            let old: egret.DisplayObject = this._displayObject;
             if (this._displayObject.parent != null) {
-                var i: number = this._displayObject.parent.getChildIndex(this._displayObject);
+                let i: number = this._displayObject.parent.getChildIndex(this._displayObject);
                 this._displayObject.parent.addChildAt(newObj, i);
                 this._displayObject.parent.removeChild(this._displayObject);
             }
@@ -959,8 +961,8 @@ module fairygui {
 
         protected handleXYChanged(): void {
             if (this._displayObject) {
-                var xv: number = this._x;
-                var yv: number = this._y;
+                let xv: number = this._x;
+                let yv: number = this._y;
                 if (this._pivotAsAnchor) {
                     xv -= this._pivotX * this._width;
                     yv -= this._pivotY * this._height;
@@ -1003,11 +1005,11 @@ module fairygui {
         protected handleGrayedChanged(): void {
             if (this._displayObject) {
                 if (this._grayed) {
-                    var colorFlilter = new egret.ColorMatrixFilter(GObject.colorMatrix);
+                    let colorFlilter = new egret.ColorMatrixFilter(GObject.colorMatrix);
                     this._displayObject.filters = [colorFlilter];
                 }
                 else
-                    this._displayObject.filters = null;
+                    this._displayObject.filters = [];
             }
         }
 
@@ -1028,11 +1030,11 @@ module fairygui {
             buffer.seek(beginPos, 0);
             buffer.skip(5);
 
-            var f1: number;
-            var f2: number;
+            let f1: number;
+            let f2: number;
 
-            this._id = buffer.readS();
-            this._name = buffer.readS();
+            this._id = <string>buffer.readS();
+            this._name = <string>buffer.readS();
             f1 = buffer.readInt();
             f2 = buffer.readInt();
             this.setXY(f1, f2);
@@ -1082,24 +1084,24 @@ module fairygui {
                 this.touchable = false;
             if (buffer.readBool())
                 this.grayed = true;
-            var bm: number = buffer.readByte();
+            let bm: number = buffer.readByte();
             if (bm == 2)
                 this.blendMode = egret.BlendMode.ADD;
             else if (bm == 5)
                 this.blendMode = egret.BlendMode.ERASE;
 
-            var filter: number = buffer.readByte();
+            let filter: number = buffer.readByte();
             if (filter == 1) {
-                var cm: ColorMatrix = new ColorMatrix();
+                let cm: ColorMatrix = new ColorMatrix();
                 cm.adjustBrightness(buffer.readFloat());
                 cm.adjustContrast(buffer.readFloat());
                 cm.adjustSaturation(buffer.readFloat());
                 cm.adjustHue(buffer.readFloat());
-                var cf: egret.ColorMatrixFilter = new egret.ColorMatrixFilter(cm.matrix);
+                let cf: egret.ColorMatrixFilter = new egret.ColorMatrixFilter(cm.matrix);
                 this.filters = [cf];
             }
 
-            var str: string = buffer.readS();
+            let str: string|null = buffer.readS();
             if (str != null)
                 this.data = str;
         }
@@ -1107,22 +1109,22 @@ module fairygui {
         public setup_afterAdd(buffer: ByteBuffer, beginPos: number): void {
             buffer.seek(beginPos, 1);
 
-            var str: string = buffer.readS();
+            let str: string|null = buffer.readS();
             if (str != null)
                 this.tooltips = str;
 
-            var groupId: number = buffer.readShort();
+            let groupId: number = buffer.readShort();
             if (groupId >= 0)
-                this.group = <GGroup>this.parent.getChildAt(groupId);
+                this.group = <GGroup>(this.parent as GComponent).getChildAt(groupId);
 
             buffer.seek(beginPos, 2);
 
-            var cnt: number = buffer.readShort();
-            for (var i: number = 0; i < cnt; i++) {
-                var nextPos: number = buffer.readShort();
+            let cnt: number = buffer.readShort();
+            for (let i: number = 0; i < cnt; i++) {
+                let nextPos: number = buffer.readShort();
                 nextPos += buffer.position;
 
-                var gear: GearBase = this.getGear(buffer.readByte());
+                let gear: GearBase = this.getGear(buffer.readByte());
                 gear.setup(buffer);
 
                 buffer.position = nextPos;
@@ -1145,7 +1147,7 @@ module fairygui {
                 this.removeEventListener(egret.TouchEvent.TOUCH_BEGIN, this.__begin, this);
         }
 
-        private dragBegin(evt: egret.TouchEvent): void {
+        private dragBegin(evt: egret.TouchEvent|null): void {
             if (GObject.draggingObject != null)
                 GObject.draggingObject.stopDrag();
 
@@ -1168,7 +1170,7 @@ module fairygui {
             if (GObject.draggingObject == this) {
                 GRoot.inst.nativeStage.removeEventListener(egret.TouchEvent.TOUCH_MOVE, this.__moving2, this);
                 GRoot.inst.nativeStage.removeEventListener(egret.TouchEvent.TOUCH_END, this.__end2, this);
-                GObject.draggingObject = null;
+                GObject.draggingObject = <any>null;
             }
         }
 
@@ -1192,7 +1194,7 @@ module fairygui {
         }
 
         private __moving(evt: egret.TouchEvent): void {
-            var sensitivity: number = UIConfig.touchDragSensitivity;
+            let sensitivity: number = UIConfig.touchDragSensitivity;
             if (this._touchDownPoint != null
                 && Math.abs(this._touchDownPoint.x - evt.stageX) < sensitivity
                 && Math.abs(this._touchDownPoint.y - evt.stageY) < sensitivity)
@@ -1200,7 +1202,7 @@ module fairygui {
 
             this.reset();
 
-            var dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_START);
+            let dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_START);
             dragEvent.stageX = evt.stageX;
             dragEvent.stageY = evt.stageY;
             dragEvent.touchPointID = evt.touchPointID;
@@ -1211,11 +1213,11 @@ module fairygui {
         }
 
         private __moving2(evt: egret.TouchEvent): void {
-            var xx: number = evt.stageX - GObject.sGlobalDragStart.x + GObject.sGlobalRect.x;
-            var yy: number = evt.stageY - GObject.sGlobalDragStart.y + GObject.sGlobalRect.y;
+            let xx: number = evt.stageX - GObject.sGlobalDragStart.x + GObject.sGlobalRect.x;
+            let yy: number = evt.stageY - GObject.sGlobalDragStart.y + GObject.sGlobalRect.y;
 
             if (this._dragBounds != null) {
-                var rect: egret.Rectangle = GRoot.inst.localToGlobalRect(this._dragBounds.x, this._dragBounds.y,
+                let rect: egret.Rectangle = GRoot.inst.localToGlobalRect(this._dragBounds.x, this._dragBounds.y,
                     this._dragBounds.width, this._dragBounds.height, GObject.sDragHelperRect);
                 if (xx < rect.x)
                     xx = rect.x;
@@ -1235,11 +1237,11 @@ module fairygui {
             }
 
             GObject.sUpdateInDragging = true;
-            var pt: egret.Point = this.parent.globalToLocal(xx, yy, GObject.sHelperPoint);
+            let pt: egret.Point = (this.parent as GObject).globalToLocal(xx, yy, GObject.sHelperPoint);
             this.setXY(Math.round(pt.x), Math.round(pt.y));
             GObject.sUpdateInDragging = false;
 
-            var dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_MOVING);
+            let dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_MOVING);
             dragEvent.stageX = evt.stageX;
             dragEvent.stageY = evt.stageY;
             dragEvent.touchPointID = evt.touchPointID;
@@ -1250,7 +1252,7 @@ module fairygui {
             if (GObject.draggingObject == this) {
                 this.stopDrag();
 
-                var dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_END);
+                let dragEvent: DragEvent = new DragEvent(DragEvent.DRAG_END);
                 dragEvent.stageX = evt.stageX;
                 dragEvent.stageY = evt.stageY;
                 dragEvent.touchPointID = evt.touchPointID;

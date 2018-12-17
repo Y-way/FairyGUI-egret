@@ -15,7 +15,7 @@ module fairygui {
         }
 
         protected addStatus(pageId: string, buffer: ByteBuffer): void {
-            var gv: GearLookValue;
+            let gv: GearLookValue;
             if (pageId == null)
                 gv = this._default;
             else {
@@ -29,7 +29,7 @@ module fairygui {
         }
 
         public apply(): void {
-            var gv: GearLookValue = this._storage[this._controller.selectedPageId];
+            let gv: GearLookValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv)
                 gv = this._default;
 
@@ -47,8 +47,8 @@ module fairygui {
                         return;
                 }
 
-                var a: Boolean = gv.alpha != this._owner.alpha;
-                var b: Boolean = gv.rotation != this._owner.rotation;
+                let a: Boolean = gv.alpha != this._owner.alpha;
+                let b: Boolean = gv.rotation != this._owner.rotation;
                 if (a || b) {
                     if (this._owner.checkGearController(0, this._controller))
                         this._tweenConfig._displayLockToken = this._owner.addDisplayLock();
@@ -73,7 +73,7 @@ module fairygui {
         }
 
         private __tweenUpdate(tweener: GTweener): void {
-            var flag: number = tweener.userData;
+            let flag: number = tweener.userData;
             this._owner._gearLocked = true;
             if ((flag & 1) != 0)
                 this._owner.alpha = tweener.value.x;
@@ -91,10 +91,10 @@ module fairygui {
         }
 
         public updateState(): void {
-            var gv: GearLookValue = this._storage[this._controller.selectedPageId];
+            let gv: GearLookValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv) {
                 gv = new GearLookValue();
-                this._storage[this._controller.selectedPageId] = gv;
+                this._storage[<string>this._controller.selectedPageId] = gv;
             }
 
             gv.alpha = this._owner.alpha;

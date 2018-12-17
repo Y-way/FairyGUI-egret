@@ -56,7 +56,7 @@ module fairygui {
 		private _tweenStart: egret.Point;
 		private _tweenChange: egret.Point;
 
-		private _pageController: Controller;
+		private _pageController: Controller|null;
 
 		private _hzScrollBar: GScrollBar;
 		private _vtScrollBar: GScrollBar;
@@ -64,7 +64,7 @@ module fairygui {
 		private _footer: GComponent;
 
 		public isDragged: boolean;
-		public static draggingPane: ScrollPane;
+		public static draggingPane: ScrollPane|null;
 		private static _gestureFlag: number = 0;
 
 		public static SCROLL: string = "__scroll";
@@ -124,8 +124,8 @@ module fairygui {
 
 		public setup(buffer: ByteBuffer): void {
 			this._scrollType = buffer.readByte();
-			var scrollBarDisplay: ScrollBarDisplayType = buffer.readByte();
-			var flags: number = buffer.readInt();
+			let scrollBarDisplay: ScrollBarDisplayType = buffer.readByte();
+			let flags: number = buffer.readInt();
 
 			if (buffer.readBool()) {
 				this._scrollBarMargin.top = buffer.readInt();
@@ -134,10 +134,10 @@ module fairygui {
 				this._scrollBarMargin.right = buffer.readInt();
 			}
 
-			var vtScrollBarRes: string = buffer.readS();
-			var hzScrollBarRes: string = buffer.readS();
-			var headerRes: string = buffer.readS();
-			var footerRes: string = buffer.readS();
+			let vtScrollBarRes: string|null = buffer.readS();
+			let hzScrollBarRes: string|null = buffer.readS();
+			let headerRes: string|null = buffer.readS();
+			let footerRes: string|null = buffer.readS();
 
 			this._displayOnLeft = (flags & 1) != 0;
 			this._snapToItem = (flags & 2) != 0;
@@ -164,7 +164,7 @@ module fairygui {
 
 			if (scrollBarDisplay != ScrollBarDisplayType.Hidden) {
 				if (this._scrollType == ScrollType.Both || this._scrollType == ScrollType.Vertical) {
-					var res: string = vtScrollBarRes ? vtScrollBarRes : UIConfig.verticalScrollBar;
+					let res: string = vtScrollBarRes ? vtScrollBarRes : UIConfig.verticalScrollBar;
 					if (res) {
 						this._vtScrollBar = <GScrollBar><any>(UIPackage.createObjectFromURL(res));
 						if (!this._vtScrollBar)
@@ -174,7 +174,7 @@ module fairygui {
 					}
 				}
 				if (this._scrollType == ScrollType.Both || this._scrollType == ScrollType.Horizontal) {
-					var res: string = hzScrollBarRes ? hzScrollBarRes : UIConfig.horizontalScrollBar;
+					let res: string = hzScrollBarRes ? hzScrollBarRes : UIConfig.horizontalScrollBar;
 					if (res) {
 						this._hzScrollBar = <GScrollBar><any>(UIPackage.createObjectFromURL(res));
 						if (!this._hzScrollBar)
@@ -393,7 +393,7 @@ module fairygui {
 			if (!this._pageMode)
 				return 0;
 
-			var page: number = Math.floor(this._xPos / this._pageSize.x);
+			let page: number = Math.floor(this._xPos / this._pageSize.x);
 			if (this._xPos - page * this._pageSize.x > this._pageSize.x * 0.5)
 				page++;
 
@@ -408,7 +408,7 @@ module fairygui {
 			if (!this._pageMode)
 				return 0;
 
-			var page: number = Math.floor(this._yPos / this._pageSize.y);
+			let page: number = Math.floor(this._yPos / this._pageSize.y);
 			if (this._yPos - page * this._pageSize.y > this._pageSize.y * 0.5)
 				page++;
 
@@ -437,11 +437,11 @@ module fairygui {
 			return this._xPos == this._overlapSize.x || this._overlapSize.x == 0;
 		}
 
-		public get pageController(): Controller {
+		public get pageController(): Controller|null {
 			return this._pageController;
 		}
 
-		public set pageController(value: Controller) {
+		public set pageController(value: Controller|null) {
 			this._pageController = value;
 		}
 
@@ -494,10 +494,10 @@ module fairygui {
 			if (this._needRefresh)
 				this.refresh();
 
-			var rect: egret.Rectangle;
+			let rect: egret.Rectangle;
 			if (target instanceof GObject) {
 				if (target.parent != this._owner) {
-					target.parent.localToGlobalRect(target.x, target.y,
+					(target.parent as GObject).localToGlobalRect(target.x, target.y,
 						target.width, target.height, ScrollPane.sHelperRect);
 					rect = this._owner.globalToLocalRect(ScrollPane.sHelperRect.x, ScrollPane.sHelperRect.y,
 						ScrollPane.sHelperRect.width, ScrollPane.sHelperRect.height, ScrollPane.sHelperRect);
@@ -511,7 +511,7 @@ module fairygui {
 				rect = <egret.Rectangle>target;
 
 			if (this._overlapSize.y > 0) {
-				var bottom: number = this._yPos + this._viewSize.y;
+				let bottom: number = this._yPos + this._viewSize.y;
 				if (setFirst || rect.y <= this._yPos || rect.height >= this._viewSize.y) {
 					if (this._pageMode)
 						this.setPosY(Math.floor(rect.y / this._pageSize.y) * this._pageSize.y, ani);
@@ -528,7 +528,7 @@ module fairygui {
 				}
 			}
 			if (this._overlapSize.x > 0) {
-				var right: number = this._xPos + this._viewSize.x;
+				let right: number = this._xPos + this._viewSize.x;
 				if (setFirst || rect.x <= this._xPos || rect.width >= this._viewSize.x) {
 					if (this._pageMode)
 						this.setPosX(Math.floor(rect.x / this._pageSize.x) * this._pageSize.x, ani);
@@ -550,8 +550,9 @@ module fairygui {
 		}
 
 		public isChildInView(obj: GObject): boolean {
+			let dist: number = 0;
 			if (this._overlapSize.y > 0) {
-				var dist: number = obj.y + this._container.y;
+				dist = obj.y + this._container.y;
 				if (dist < -obj.height || dist > this._viewSize.y)
 					return false;
 			}
@@ -604,7 +605,7 @@ module fairygui {
 			if (!this._refreshEventDispatching && this._container[this._refreshBarAxis] <= -this._overlapSize[this._refreshBarAxis]) {
 				this._tweenStart.setTo(this._container.x, this._container.y);
 				this._tweenChange.setTo(0, 0);
-				var max: number = this._overlapSize[this._refreshBarAxis];
+				let max: number = this._overlapSize[this._refreshBarAxis];
 				if (max == 0)
 					max = Math.max(this._contentSize[this._refreshBarAxis] + this._footerLockedSize - this._viewSize[this._refreshBarAxis], 0);
 				else
@@ -633,13 +634,13 @@ module fairygui {
 
 		private updatePageController(): void {
 			if (this._pageController != null && !this._pageController.changing) {
-				var index: number;
+				let index: number;
 				if (this._scrollType == ScrollType.Horizontal)
 					index = this.currentPageX;
 				else
 					index = this.currentPageY;
 				if (index < this._pageController.pageCount) {
-					var c: Controller = this._pageController;
+					let c: Controller = this._pageController;
 					this._pageController = null; //防止HandleControllerChanged的调用
 					c.selectedIndex = index;
 					this._pageController = c;
@@ -648,7 +649,7 @@ module fairygui {
 		}
 
 		public adjustMaskContainer(): void {
-			var mx: number, my: number;
+			let mx: number, my: number;
 			if (this._displayOnLeft && this._vtScrollBar != null)
 				mx = Math.floor(this._owner.margin.left + this._vtScrollBar.width);
 			else
@@ -728,8 +729,8 @@ module fairygui {
 
 		public changeContentSizeOnScrolling(deltaWidth: number, deltaHeight: number,
 			deltaPosX: number, deltaPosY: number): void {
-			var isRightmost: boolean = this._xPos == this._overlapSize.x;
-			var isBottom: boolean = this._yPos == this._overlapSize.y;
+			let isRightmost: boolean = this._xPos == this._overlapSize.x;
+			let isBottom: boolean = this._yPos == this._overlapSize.y;
 
 			this._contentSize.x += deltaWidth;
 			this._contentSize.y += deltaHeight;
@@ -845,7 +846,7 @@ module fairygui {
 				}
 			}
 
-			var rect: egret.Rectangle = this._maskContainer.scrollRect;
+			let rect: egret.Rectangle = this._maskContainer.scrollRect;
 			if (rect) {
 				rect.width = this._viewSize.x;
 				rect.height = this._viewSize.y;
@@ -865,7 +866,7 @@ module fairygui {
 			this._xPos = ToolSet.clamp(this._xPos, 0, this._overlapSize.x);
 			this._yPos = ToolSet.clamp(this._yPos, 0, this._overlapSize.y);
 			if (this._refreshBarAxis != null) {
-				var max: number = this._overlapSize[this._refreshBarAxis];
+				let max: number = this._overlapSize[this._refreshBarAxis];
 				if (max == 0)
 					max = Math.max(this._contentSize[this._refreshBarAxis] + this._footerLockedSize - this._viewSize[this._refreshBarAxis], 0);
 				else
@@ -943,8 +944,8 @@ module fairygui {
 
 		private refresh2() {
 			if (this._aniFlag == 1 && !this.isDragged) {
-				var posX: number;
-				var posY: number;
+				let posX: number;
+				let posY: number;
 
 				if (this._overlapSize.x > 0)
 					posX = -Math.floor(this._xPos);
@@ -1013,7 +1014,7 @@ module fairygui {
 			else
 				this.isDragged = false;
 
-			var pt: egret.Point = this._owner.globalToLocal(evt.stageX, evt.stageY, ScrollPane.sHelperPoint);
+			let pt: egret.Point = this._owner.globalToLocal(evt.stageX, evt.stageY, ScrollPane.sHelperPoint);
 
 			this._containerPos.setTo(this._container.x, this._container.y);
 			this._beginTouchPos.setTo(pt.x, pt.y);
@@ -1039,11 +1040,11 @@ module fairygui {
 			if (ScrollPane.draggingPane != null && ScrollPane.draggingPane != this || GObject.draggingObject != null) //已经有其他拖动
 				return;
 
-			var pt: egret.Point = this._owner.globalToLocal(evt.stageX, evt.stageY, ScrollPane.sHelperPoint);
+			let pt: egret.Point = this._owner.globalToLocal(evt.stageX, evt.stageY, ScrollPane.sHelperPoint);
 
-			var sensitivity: number = UIConfig.touchScrollSensitivity;
-			var diff: number, diff2: number;
-			var sv: boolean, sh: boolean, st: boolean;
+			let sensitivity: number = UIConfig.touchScrollSensitivity;
+			let diff: number, diff2: number;
+			let sv: boolean = false, sh: boolean = false, st: boolean = false;
 
 			if (this._scrollType == ScrollType.Vertical) {
 				if (!this._isHoldAreaDone) {
@@ -1096,8 +1097,8 @@ module fairygui {
 				sv = sh = true;
 			}
 
-			var newPosX: number = Math.floor(this._containerPos.x + pt.x - this._beginTouchPos.x);
-			var newPosY: number = Math.floor(this._containerPos.y + pt.y - this._beginTouchPos.y);
+			let newPosX: number = Math.floor(this._containerPos.x + pt.x - this._beginTouchPos.x);
+			let newPosY: number = Math.floor(this._containerPos.y + pt.y - this._beginTouchPos.y);
 
 			if (sv) {
 				if (newPosY > 0) {
@@ -1143,20 +1144,20 @@ module fairygui {
 
 
 			//更新速度
-			var now: number = egret.getTimer() / 1000;
-			var deltaTime: number = Math.max(now - this._lastMoveTime, 1 / 60);
-			var deltaPositionX: number = pt.x - this._lastTouchPos.x;
-			var deltaPositionY: number = pt.y - this._lastTouchPos.y;
+			let now: number = egret.getTimer() / 1000;
+			let deltaTime: number = Math.max(now - this._lastMoveTime, 1 / 60);
+			let deltaPositionX: number = pt.x - this._lastTouchPos.x;
+			let deltaPositionY: number = pt.y - this._lastTouchPos.y;
 			if (!sh)
 				deltaPositionX = 0;
 			if (!sv)
 				deltaPositionY = 0;
 			if (deltaTime != 0) {
-				var frameRate: number = this._owner.displayObject.stage.frameRate;
-				var elapsed: number = deltaTime * frameRate - 1;
+				let frameRate: number = this._owner.displayObject.stage.frameRate;
+				let elapsed: number = deltaTime * frameRate - 1;
 				if (elapsed > 1) //速度衰减
 				{
-					var factor: number = Math.pow(0.833, elapsed);
+					let factor: number = Math.pow(0.833, elapsed);
 					this._velocity.x = this._velocity.x * factor;
 					this._velocity.y = this._velocity.y * factor;
 				}
@@ -1166,8 +1167,8 @@ module fairygui {
 
 			/*速度计算使用的是本地位移，但在后续的惯性滚动判断中需要用到屏幕位移，所以这里要记录一个位移的比例。
 			*/
-			var deltaGlobalPositionX: number = this._lastTouchGlobalPos.x - evt.stageX;
-			var deltaGlobalPositionY: number = this._lastTouchGlobalPos.y - evt.stageY;
+			let deltaGlobalPositionX: number = this._lastTouchGlobalPos.x - evt.stageX;
+			let deltaGlobalPositionY: number = this._lastTouchGlobalPos.y - evt.stageY;
 			if (deltaPositionX != 0)
 				this._velocityScale = Math.abs(deltaGlobalPositionX / deltaPositionX);
 			else if (deltaPositionY != 0)
@@ -1229,7 +1230,7 @@ module fairygui {
 			this._tweenStart.setTo(this._container.x, this._container.y);
 
 			ScrollPane.sEndPos.setTo(this._tweenStart.x, this._tweenStart.y);
-			var flag: boolean = false;
+			let flag: boolean = false;
 			if (this._container.x > 0) {
 				ScrollPane.sEndPos.x = 0;
 				flag = true;
@@ -1265,7 +1266,7 @@ module fairygui {
 					this._tweenChange.y = ScrollPane.sEndPos.y - this._tweenStart.y;
 				}
 				else if (this._footerLockedSize > 0 && ScrollPane.sEndPos[this._refreshBarAxis] == -this._overlapSize[this._refreshBarAxis]) {
-					var max: number = this._overlapSize[this._refreshBarAxis];
+					let max: number = this._overlapSize[this._refreshBarAxis];
 					if (max == 0)
 						max = Math.max(this._contentSize[this._refreshBarAxis] + this._footerLockedSize - this._viewSize[this._refreshBarAxis], 0);
 					else
@@ -1280,10 +1281,10 @@ module fairygui {
 			else {
 				//更新速度
 				if (!this._inertiaDisabled) {
-					var frameRate: number = this._owner.displayObject.stage.frameRate;
-					var elapsed: number = (egret.getTimer() / 1000 - this._lastMoveTime) * frameRate - 1;
+					let frameRate: number = this._owner.displayObject.stage.frameRate;
+					let elapsed: number = (egret.getTimer() / 1000 - this._lastMoveTime) * frameRate - 1;
 					if (elapsed > 1) {
-						var factor: number = Math.pow(0.833, elapsed);
+						let factor: number = Math.pow(0.833, elapsed);
 						this._velocity.x = this._velocity.x * factor;
 						this._velocity.y = this._velocity.y * factor;
 					}
@@ -1353,7 +1354,7 @@ module fairygui {
 		}
 
 		private loopCheckingCurrent(): boolean {
-			var changed: boolean = false;
+			let changed: boolean = false;
 			if (this._loop == 1 && this._overlapSize.x > 0) {
 				if (this._xPos < 0.001) {
 					this._xPos += this.getLoopPartSize(2, "x");
@@ -1392,8 +1393,8 @@ module fairygui {
 		}
 
 		private loopCheckingTarget2(endPos: egret.Point, axis: string): void {
-			var halfSize: number;
-			var tmp: number;
+			let halfSize: number;
+			let tmp: number;
 			if (endPos[axis] > 0) {
 				halfSize = this.getLoopPartSize(2, axis);
 				tmp = this._tweenStart[axis] - halfSize;
@@ -1416,9 +1417,9 @@ module fairygui {
 			if (this._overlapSize[axis] == 0)
 				return value;
 
-			var pos: number = axis == "x" ? this._xPos : this._yPos;
-			var changed: boolean = false;
-			var v: number;
+			let pos: number = axis == "x" ? this._xPos : this._yPos;
+			let changed: boolean = false;
+			let v: number;
 			if (value < 0.001) {
 				value += this.getLoopPartSize(2, axis);
 				if (value > pos) {
@@ -1454,7 +1455,7 @@ module fairygui {
 				pos.y = this.alignByPage(pos.y, "y", inertialScrolling);
 			}
 			else if (this._snapToItem) {
-				var pt: egret.Point = this._owner.getSnappingPosition(-pos.x, -pos.y, ScrollPane.sHelperPoint);
+				let pt: egret.Point = this._owner.getSnappingPosition(-pos.x, -pos.y, ScrollPane.sHelperPoint);
 				if (pos.x < 0 && pos.x > -this._overlapSize.x)
 					pos.x = -pt.x;
 				if (pos.y < 0 && pos.y > -this._overlapSize.y)
@@ -1463,7 +1464,7 @@ module fairygui {
 		}
 
 		private alignByPage(pos: number, axis: string, inertialScrolling: boolean): number {
-			var page: number;
+			let page: number;
 
 			if (pos > 0)
 				page = 0;
@@ -1471,9 +1472,9 @@ module fairygui {
 				page = Math.ceil(this._contentSize[axis] / this._pageSize[axis]) - 1;
 			else {
 				page = Math.floor(-pos / this._pageSize[axis]);
-				var change: number = inertialScrolling ? (pos - this._containerPos[axis]) : (pos - this._container[axis]);
-				var testPageSize: number = Math.min(this._pageSize[axis], this._contentSize[axis] - (page + 1) * this._pageSize[axis]);
-				var delta: number = -pos - page * this._pageSize[axis];
+				let change: number = inertialScrolling ? (pos - this._containerPos[axis]) : (pos - this._container[axis]);
+				let testPageSize: number = Math.min(this._pageSize[axis], this._contentSize[axis] - (page + 1) * this._pageSize[axis]);
+				let delta: number = -pos - page * this._pageSize[axis];
 
 				//页面吸附策略
 				if (Math.abs(change) > this._pageSize[axis])//如果滚动距离超过1页,则需要超过页面的一半，才能到更下一页
@@ -1495,15 +1496,15 @@ module fairygui {
 
 			//惯性滚动模式下，会增加判断尽量不要滚动超过一页
 			if (inertialScrolling) {
-				var oldPos: number = this._tweenStart[axis];
-				var oldPage: number;
+				let oldPos: number = this._tweenStart[axis];
+				let oldPage: number;
 				if (oldPos > 0)
 					oldPage = 0;
 				else if (oldPos < -this._overlapSize[axis])
 					oldPage = Math.ceil(this._contentSize[axis] / this._pageSize[axis]) - 1;
 				else
 					oldPage = Math.floor(-oldPos / this._pageSize[axis]);
-				var startPage: number = Math.floor(-this._containerPos[axis] / this._pageSize[axis]);
+				let startPage: number = Math.floor(-this._containerPos[axis] / this._pageSize[axis]);
 				if (Math.abs(page - startPage) > 1 && Math.abs(oldPage - startPage) <= 1) {
 					if (page > startPage)
 						page = startPage + 1;
@@ -1522,21 +1523,21 @@ module fairygui {
 		}
 
 		private updateTargetAndDuration2(pos: number, axis: string): number {
-			var v: number = this._velocity[axis];
-			var duration: number = 0;
+			let v: number = this._velocity[axis];
+			let duration: number = 0;
 			if (pos > 0)
 				pos = 0;
 			else if (pos < -this._overlapSize[axis])
 				pos = -this._overlapSize[axis];
 			else {
 				//以屏幕像素为基准
-				var isMobile: boolean = egret.Capabilities.isMobile;
-				var v2: number = Math.abs(v) * this._velocityScale;
+				let isMobile: boolean = egret.Capabilities.isMobile;
+				let v2: number = Math.abs(v) * this._velocityScale;
 				//在移动设备上，需要对不同分辨率做一个适配，我们的速度判断以1136分辨率为基准
 				if (isMobile)
 					v2 *= 1136 / Math.max(this._owner.displayObject.stage.stageWidth, this._owner.displayObject.stage.stageHeight);
 				//这里有一些阈值的处理，因为在低速内，不希望产生较大的滚动（甚至不滚动）
-				var ratio: number = 0;
+				let ratio: number = 0;
 
 				if (this._pageMode || !isMobile) {
 					if (v2 > 500)
@@ -1559,8 +1560,8 @@ module fairygui {
 
 					//计算距离要使用本地速度
 					//理论公式貌似滚动的距离不够，改为经验公式
-					//var change:number = (v/ 60 - 1) / (1 - this._decelerationRate);
-					var change: number = Math.floor(v * duration * 0.4);
+					//let change:number = (v/ 60 - 1) / (1 - this._decelerationRate);
+					let change: number = Math.floor(v * duration * 0.4);
 					pos += change;
 				}
 			}
@@ -1576,7 +1577,7 @@ module fairygui {
 			if (this._tweenChange[axis] == 0 || Math.abs(this._tweenChange[axis]) >= Math.abs(oldChange))
 				return;
 
-			var newDuration: number = Math.abs(this._tweenChange[axis] / oldChange) * this._tweenDuration[axis];
+			let newDuration: number = Math.abs(this._tweenChange[axis] / oldChange) * this._tweenDuration[axis];
 			if (newDuration < ScrollPane.TWEEN_TIME_DEFAULT)
 				newDuration = ScrollPane.TWEEN_TIME_DEFAULT;
 
@@ -1599,13 +1600,14 @@ module fairygui {
 		private checkRefreshBar(): void {
 			if (this._header == null && this._footer == null)
 				return;
-
-			var pos: number = this._container[this._refreshBarAxis];
+			
+			let pos: number = this._container[this._refreshBarAxis];
+			let pt: egret.Point;
 			if (this._header != null) {
 				if (pos > 0) {
 					if (this._header.displayObject.parent == null)
 						this._maskContainer.addChildAt(this._header.displayObject, 0);
-					var pt: egret.Point = ScrollPane.sHelperPoint;
+					pt = ScrollPane.sHelperPoint;
 					pt.setTo(this._header.width, this._header.height);
 					pt[this._refreshBarAxis] = pos;
 					this._header.setSize(pt.x, pt.y);
@@ -1617,7 +1619,7 @@ module fairygui {
 			}
 
 			if (this._footer != null) {
-				var max: number = this._overlapSize[this._refreshBarAxis];
+				let max: number = this._overlapSize[this._refreshBarAxis];
 				if (pos < -max || max == 0 && this._footerLockedSize > 0) {
 					if (this._footer.displayObject.parent == null)
 						this._maskContainer.addChildAt(this._footer.displayObject, 0);
@@ -1646,8 +1648,8 @@ module fairygui {
 		}
 
 		private tweenUpdate(timestamp: number): boolean {
-			var nx: number = this.runTween("x");
-			var ny: number = this.runTween("y");
+			let nx: number = this.runTween("x");
+			let ny: number = this.runTween("y");
 
 			this._container.x = nx;
 			this._container.y = ny;
@@ -1683,7 +1685,7 @@ module fairygui {
 		}
 
 		private runTween(axis: string): number {
-			var newValue: number;
+			let newValue: number;
 			if (this._tweenChange[axis] != 0) {
 				this._tweenTime[axis] += GTimers.deltaTime / 1000;
 				if (this._tweenTime[axis] >= this._tweenDuration[axis]) {
@@ -1691,16 +1693,16 @@ module fairygui {
 					this._tweenChange[axis] = 0;
 				}
 				else {
-					var ratio: number = ScrollPane.easeFunc(this._tweenTime[axis], this._tweenDuration[axis]);
+					let ratio: number = ScrollPane.easeFunc(this._tweenTime[axis], this._tweenDuration[axis]);
 					newValue = this._tweenStart[axis] + Math.floor(this._tweenChange[axis] * ratio);
 				}
 
-				var threshold1: number = 0;
-				var threshold2: number = -this._overlapSize[axis];
+				let threshold1: number = 0;
+				let threshold2: number = -this._overlapSize[axis];
 				if (this._headerLockedSize > 0 && this._refreshBarAxis == axis)
 					threshold1 = this._headerLockedSize;
 				if (this._footerLockedSize > 0 && this._refreshBarAxis == axis) {
-					var max: number = this._overlapSize[this._refreshBarAxis];
+					let max: number = this._overlapSize[this._refreshBarAxis];
 					if (max == 0)
 						max = Math.max(this._contentSize[this._refreshBarAxis] + this._footerLockedSize - this._viewSize[this._refreshBarAxis], 0);
 					else

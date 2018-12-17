@@ -8,9 +8,9 @@ module fairygui {
         private _reverse: boolean;
 
         private _titleObject: GTextField;
-        private _aniObject: GObject;
-        private _barObjectH: GObject;
-        private _barObjectV: GObject;
+        private _aniObject: GObject|null;
+        private _barObjectH: GObject|null;
+        private _barObjectV: GObject|null;
         private _barMaxWidth: number = 0;
         private _barMaxHeight: number = 0;
         private _barMaxWidthDelta: number = 0;
@@ -66,14 +66,14 @@ module fairygui {
             }
         }
 
-        public tweenValue(value: number, duration: number): GTweener {
+        public tweenValue(value: number, duration: number): GTweener|null {
             if (this._value != value) {
                 if (this._tweening) {
                     GTween.kill(this, false, this.update);
                     this._tweening = false;
                 }
 
-                var oldValule: number = this._value;
+                let oldValule: number = this._value;
                 this._value = value;
 
                 this._tweening = true;
@@ -85,7 +85,7 @@ module fairygui {
         }
 
         public update(newValue: number): void {
-            var percent: number = this._max != 0 ? Math.min(newValue / this._max, 1) : 0;
+            let percent: number = this._max != 0 ? Math.min(newValue / this._max, 1) : 0;
             if (this._titleObject) {
                 switch (this._titleType) {
                     case ProgressTitleType.Percent:
@@ -106,8 +106,8 @@ module fairygui {
                 }
             }
 
-            var fullWidth: number = this.width - this._barMaxWidthDelta;
-            var fullHeight: number = this.height - this._barMaxHeightDelta;
+            let fullWidth: number = this.width - this._barMaxWidthDelta;
+            let fullHeight: number = this.height - this._barMaxHeightDelta;
             if (!this._reverse) {
                 if (this._barObjectH)
                     this._barObjectH.width = Math.round(fullWidth * percent);

@@ -17,9 +17,9 @@ module fairygui {
         private _snapping: boolean;
         private _userData: any;
 
-        private _onUpdate: Function;
-        private _onStart: Function;
-        private _onComplete: Function;
+        private _onUpdate: Function|null;
+        private _onStart: Function|null;
+        private _onComplete: Function|null;
         private _onUpdateCaller: any;
         private _onStartCaller: any;
         private _onCompleteCaller: any;
@@ -102,7 +102,7 @@ module fairygui {
             return this;
         }
 
-        public setTarget(value: Object, propType: Object = null): GTweener {
+        public setTarget(value: Object, propType: Object|null = null): GTweener {
             this._target = value;
             this._propType = propType;
             return this;
@@ -346,15 +346,15 @@ module fairygui {
                     return;
             }
 
-            var reversed: boolean = false;
-            var tt: number = this._elapsedTime - this._delay;
+            let reversed: boolean = false;
+            let tt: number = this._elapsedTime - this._delay;
             if (this._breakpoint >= 0 && tt >= this._breakpoint) {
                 tt = this._breakpoint;
                 this._ended = 2;
             }
 
             if (this._repeat != 0) {
-                var round: number = Math.floor(tt / this._duration);
+                let round: number = Math.floor(tt / this._duration);
                 tt -= this._duration * round;
                 if (this._yoyo)
                     reversed = round % 2 == 1;
@@ -379,9 +379,9 @@ module fairygui {
 
             if (this._valueSize == 5) {
                 if (this._ended == 0) {
-                    var r: number = this._startValue.w * (1 - this._normalizedTime);
-                    var rx: number = r * (Math.random() > 0.5 ? 1 : -1);
-                    var ry: number = r * (Math.random() > 0.5 ? 1 : -1);
+                    let r: number = this._startValue.w * (1 - this._normalizedTime);
+                    let rx: number = r * (Math.random() > 0.5 ? 1 : -1);
+                    let ry: number = r * (Math.random() > 0.5 ? 1 : -1);
 
                     this._deltaValue.x = rx;
                     this._deltaValue.y = ry;
@@ -394,10 +394,10 @@ module fairygui {
                 }
             }
             else {
-                for (var i: number = 0; i < this._valueSize; i++) {
-                    var n1: number = this._startValue.getField(i);
-                    var n2: number = this._endValue.getField(i);
-                    var f: number = n1 + (n2 - n1) * this._normalizedTime;
+                for (let i: number = 0; i < this._valueSize; i++) {
+                    let n1: number = this._startValue.getField(i);
+                    let n2: number = this._endValue.getField(i);
+                    let f: number = n1 + (n2 - n1) * this._normalizedTime;
                     if (this._snapping)
                         f = Math.round(f);
                     this._deltaValue.setField(i, f - this._value.getField(i));

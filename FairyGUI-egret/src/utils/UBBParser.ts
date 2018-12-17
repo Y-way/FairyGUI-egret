@@ -35,7 +35,7 @@ module fairygui {
                 if (attr != null)
                     return "<a href=\"" + attr + "\" target=\"_blank\">";
                 else {
-                    var href: string = this.getTagText();
+                    let href: string|null = this.getTagText();
                     return "<a href=\"" + href + "\" target=\"_blank\">";
                 }
             }
@@ -43,9 +43,9 @@ module fairygui {
                 return "</a>";
         }
 
-        protected onTag_IMG(tagName: string, end: boolean, attr: string): string {
+        protected onTag_IMG(tagName: string, end: boolean, attr: string): string|null {
             if (!end) {
-                var src: string = this.getTagText(true);
+                let src: string|null = this.getTagText(true);
                 if (!src)
                     return null;
 
@@ -94,10 +94,10 @@ module fairygui {
                 return "</font>";
         }
 
-        protected getTagText(remove:boolean=false):string {
-			var pos1:number = this._readPos;
-			var pos2:number;
-			var result:string = "";
+        protected getTagText(remove:boolean=false):string|null {
+			let pos1:number = this._readPos;
+			let pos2:number;
+			let result:string = "";
 			while ((pos2 = this._text.indexOf("[", pos1)) != -1)
 			{
 				if (this._text.charCodeAt(pos2 - 1) == 92 )//\
@@ -123,12 +123,12 @@ module fairygui {
 		
 		public parse(text:string, remove:boolean=false):string {
 			this._text = text;
-			var pos1:number = 0, pos2:number, pos3:number;
-			var end:boolean;
-			var tag:string, attr:string;
-			var repl:string;
-			var func:Function;
-			var result:string = "";
+			let pos1:number = 0, pos2:number, pos3:number;
+			let end:boolean;
+			let tag:string, attr:string|null;
+			let repl:string|null;
+			let func:Function;
+			let result:string = "";
 			while((pos2=this._text.indexOf("[", pos1))!=-1) {
 				if (pos2 > 0 && this._text.charCodeAt(pos2 - 1) == 92 )//\
 				{
@@ -172,7 +172,7 @@ module fairygui {
 			if (pos1 < this._text.length)
 				result += this._text.substr(pos1);
 			
-			this._text = null;
+			this._text = <any>null;
 			
 			return result;
 		}

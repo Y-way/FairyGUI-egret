@@ -4,13 +4,13 @@ module fairygui {
         protected _contentPane: GComponent;
         protected _list: GList;
 
-        public constructor(resourceURL: string = null) {
+        public constructor(resourceURL: string|null = null) {
             if (!resourceURL) {
                 resourceURL = UIConfig.popupMenu;
                 if (!resourceURL)
                     throw "UIConfig.popupMenu not defined";
             }
-            this._contentPane = UIPackage.createObjectFromURL(resourceURL).asCom;
+            this._contentPane = UIPackage.createObjectFromURL(resourceURL) as GComponent;
             this._contentPane.addEventListener(egret.Event.ADDED_TO_STAGE, this.__addedToStage, this);
             this._list = <GList>(this._contentPane.getChild("list"));
             this._list.removeChildrenToPool();
@@ -24,24 +24,24 @@ module fairygui {
             this._contentPane.dispose();
         }
 
-        public addItem(caption: string, callback: Function = null): GButton {
-            var item: GButton = this._list.addItemFromPool().asButton;
+        public addItem(caption: string, callback: Function|null = null): GButton {
+            let item: GButton = this._list.addItemFromPool() as GButton;
             item.title = caption;
             item.data = callback;
             item.grayed = false;
-            var c: Controller = item.getController("checked");
+            let c: Controller|null = item.getController("checked");
             if (c != null)
                 c.selectedIndex = 0;
             return item;
         }
 
-        public addItemAt(caption: string, index: number, callback: Function = null): GButton {
-            var item: GButton = this._list.getFromPool().asButton;
+        public addItemAt(caption: string, index: number, callback: Function|null = null): GButton {
+            let item: GButton = this._list.getFromPool() as GButton;
             this._list.addChildAt(item, index);
             item.title = caption;
             item.data = callback;
             item.grayed = false;
-            var c: Controller = item.getController("checked");
+            let c: Controller|null = item.getController("checked");
             if (c != null)
                 c.selectedIndex = 0;
             return item;
@@ -54,17 +54,17 @@ module fairygui {
         }
 
         public getItemName(index: number): string {
-            var item: GObject = this._list.getChildAt(index);
+            let item: GObject = this._list.getChildAt(index);
             return item.name;
         }
 
         public setItemText(name: string, caption: string) {
-            var item: GButton = this._list.getChild(name).asButton;
+            let item: GButton = this._list.getChild(name) as GButton;
             item.title = caption;
         }
 
         public setItemVisible(name: string, visible: boolean) {
-            var item: GButton = this._list.getChild(name).asButton;
+            let item: GButton = this._list.getChild(name) as GButton;
             if (item.visible != visible) {
                 item.visible = visible;
                 this._list.setBoundsChangedFlag();
@@ -72,13 +72,13 @@ module fairygui {
         }
 
         public setItemGrayed(name: string, grayed: boolean) {
-            var item: GButton = this._list.getChild(name).asButton;
+            let item: GButton = this._list.getChild(name) as GButton;
             item.grayed = grayed;
         }
 
         public setItemCheckable(name: string, checkable: boolean) {
-            var item: GButton = this._list.getChild(name).asButton;
-            var c: Controller = item.getController("checked");
+            let item: GButton = this._list.getChild(name) as GButton;
+            let c: Controller|null = item.getController("checked");
             if (c != null) {
                 if (checkable) {
                     if (c.selectedIndex == 0)
@@ -90,15 +90,15 @@ module fairygui {
         }
 
         public setItemChecked(name: string, checked: boolean) {
-            var item: GButton = this._list.getChild(name).asButton;
-            var c: Controller = item.getController("checked");
+            let item: GButton = this._list.getChild(name) as GButton;
+            let c: Controller|null = item.getController("checked");
             if (c != null)
                 c.selectedIndex = checked ? 2 : 1;
         }
 
         public isItemChecked(name: string): boolean {
-            var item: GButton = this._list.getChild(name).asButton;
-            var c: Controller = item.getController("checked");
+            let item: GButton = this._list.getChild(name) as GButton;
+            let c: Controller|null = item.getController("checked");
             if (c != null)
                 return c.selectedIndex == 2;
             else
@@ -106,9 +106,9 @@ module fairygui {
         }
 
         public removeItem(name: string): boolean {
-            var item: GButton = <GButton>this._list.getChild(name);
+            let item: GButton = <GButton>this._list.getChild(name);
             if (item != null) {
-                var index: number = this._list.getChildIndex(item);
+                let index: number = this._list.getChildIndex(item);
                 this._list.removeChildToPoolAt(index);
                 return true;
             }
@@ -132,8 +132,8 @@ module fairygui {
             return this._list;
         }
 
-        public show(target: GObject = null, downward: any = null) {
-            var r: GRoot = target != null ? target.root : GRoot.inst;
+        public show(target: GObject|null = null, downward: any = null) {
+            let r: GRoot = target != null ? target.root : GRoot.inst;
             r.showPopup(this.contentPane, (target instanceof GRoot) ? null : target, downward);
         }
 
@@ -142,21 +142,21 @@ module fairygui {
         }
 
         private __clickItem2(evt: ItemEvent): void {
-            var item: GButton = evt.itemObject.asButton;
+            let item: GButton = evt.itemObject as GButton;
             if (item == null)
                 return;
             if (item.grayed) {
                 this._list.selectedIndex = -1;
                 return;
             }
-            var c: Controller = item.getController("checked");
+            let c: Controller|null = item.getController("checked");
             if (c != null && c.selectedIndex != 0) {
                 if (c.selectedIndex == 1)
                     c.selectedIndex = 2;
                 else
                     c.selectedIndex = 1;
             }
-            var r: GRoot = <GRoot>(this._contentPane.parent);
+            let r: GRoot = <GRoot>(this._contentPane.parent);
             r.hidePopup(this.contentPane);
             if (item.data != null) {
                 if (item.data.length == 1)

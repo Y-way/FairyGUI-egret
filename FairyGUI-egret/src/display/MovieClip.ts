@@ -7,7 +7,7 @@ module fairygui {
         public repeatDelay: number = 0;
         public timeScale: number = 1;
 
-        private _texture: egret.Texture;
+        private _texture: egret.Texture|null;
         private _needRebuild: boolean;
         private _frameRect: egret.Rectangle;
 
@@ -20,7 +20,7 @@ module fairygui {
         private _times: number = 0;
         private _endAt: number = 0;
         private _status: number = 0; //0-none, 1-next loop, 2-ending, 3-ended
-        private _callback: Function;
+        private _callback: Function|null;
         private _callbackObj: any;
         private _smoothing: boolean = true;
 
@@ -132,12 +132,12 @@ module fairygui {
         }
 
         public advance(timeInMiniseconds: number): void {
-            var beginFrame: number = this._frame;
-            var beginReversed: boolean = this._reversed;
-            var backupTime: number = timeInMiniseconds;
+            let beginFrame: number = this._frame;
+            let beginReversed: boolean = this._reversed;
+            let backupTime: number = timeInMiniseconds;
 
             while (true) {
-                var tt: number = this.interval + this._frames[this._frame].addDelay;
+                let tt: number = this.interval + this._frames[this._frame].addDelay;
                 if (this._frame == 0 && this._repeatedCount > 0)
                     tt += this.repeatDelay;
                 if (timeInMiniseconds < tt) {
@@ -175,7 +175,7 @@ module fairygui {
 
                 if (this._frame == beginFrame && this._reversed == beginReversed) //走了一轮了
                 {
-                    var roundTime: number = backupTime - timeInMiniseconds; //这就是一轮需要的时间
+                    let roundTime: number = backupTime - timeInMiniseconds; //这就是一轮需要的时间
                     timeInMiniseconds -= Math.floor(timeInMiniseconds / roundTime) * roundTime; //跳过
                 }
             }
@@ -186,7 +186,7 @@ module fairygui {
         //从start帧开始，播放到end帧（-1表示结尾），重复times次（0表示无限循环），循环结束后，停止在endAt帧（-1表示参数end）
         public setPlaySettings(start: number = 0, end: number = -1,
             times: number = 0, endAt: number = -1,
-            endCallback: Function = null, callbackObj: any = null): void {
+            endCallback: Function|null = null, callbackObj: any|null = null): void {
             this._start = start;
             this._end = end;
             if (this._end == -1 || this._end > this._frameCount - 1)
@@ -206,12 +206,12 @@ module fairygui {
             if (!this._playing || this._frameCount == 0 || this._status == 3)
                 return;
 
-            var dt: number = GTimers.deltaTime;
+            let dt: number = GTimers.deltaTime;
             if (this.timeScale != 1)
                 dt *= this.timeScale;
 
             this._frameElapsed += dt;
-            var tt: number = this.interval + this._frames[this._frame].addDelay;
+            let tt: number = this.interval + this._frames[this._frame].addDelay;
             if (this._frame == 0 && this._repeatedCount > 0)
                 tt += this.repeatDelay;
             if (this._frameElapsed < tt)
@@ -261,8 +261,8 @@ module fairygui {
 
                 //play end
                 if (this._callback != null) {
-                    var callback: Function = this._callback;
-                    var caller: any = this._callbackObj;
+                    let callback: Function = this._callback;
+                    let caller: any = this._callbackObj;
                     this._callback = null;
                     this._callbackObj = null;
                     callback.call(caller);
@@ -287,7 +287,7 @@ module fairygui {
 
         private drawFrame(): void {
             if (this._frameCount > 0 && this._frame < this._frames.length) {
-                var frame: Frame = this._frames[this._frame];
+                let frame: Frame = this._frames[this._frame];
                 this._texture = frame.texture;
                 this._frameRect = frame.rect;
             }
@@ -323,18 +323,18 @@ module fairygui {
 
         //comment this function before 5.1.0
         $updateRenderNode(): void {
-            var texture = this._texture;
+            let texture = this._texture;
             if (texture) {
-                var offsetX: number = Math.round(texture.$offsetX) + this._frameRect.x;
-                var offsetY: number = Math.round(texture.$offsetY) + this._frameRect.y;
-                var bitmapWidth: number = texture.$bitmapWidth;
-                var bitmapHeight: number = texture.$bitmapHeight;
-                var textureWidth: number = texture.$getTextureWidth();
-                var textureHeight: number = texture.$getTextureHeight();
-                var destW: number = Math.round(texture.$getScaleBitmapWidth());
-                var destH: number = Math.round(texture.$getScaleBitmapHeight());
-                var sourceWidth: number = texture.$sourceWidth;
-                var sourceHeight: number = texture.$sourceHeight;
+                let offsetX: number = Math.round(texture.$offsetX) + this._frameRect.x;
+                let offsetY: number = Math.round(texture.$offsetY) + this._frameRect.y;
+                let bitmapWidth: number = texture.$bitmapWidth;
+                let bitmapHeight: number = texture.$bitmapHeight;
+                let textureWidth: number = texture.$getTextureWidth();
+                let textureHeight: number = texture.$getTextureHeight();
+                let destW: number = Math.round(texture.$getScaleBitmapWidth());
+                let destH: number = Math.round(texture.$getScaleBitmapHeight());
+                let sourceWidth: number = texture.$sourceWidth;
+                let sourceHeight: number = texture.$sourceHeight;
 
                 egret.sys.BitmapNode.$updateTextureData(<egret.sys.NormalBitmapNode>this.$renderNode, texture.$bitmapData, texture.$bitmapX, texture.$bitmapY,
                     bitmapWidth, bitmapHeight, offsetX, offsetY, textureWidth, textureHeight, destW, destH, sourceWidth, sourceHeight, egret.BitmapFillMode.SCALE, this._smoothing);
@@ -344,18 +344,18 @@ module fairygui {
         //comment out this function after 5.1.0
         /*
         $render(): void {
-            var texture = this._texture;
+            let texture = this._texture;
             if (texture) {
-                var offsetX: number = Math.round(texture._offsetX) + this._frameRect.x;
-                var offsetY: number = Math.round(texture._offsetY) + this._frameRect.y;
-                var bitmapWidth: number = texture._bitmapWidth;
-                var bitmapHeight: number = texture._bitmapHeight;
-                var textureWidth: number = texture.$getTextureWidth();
-                var textureHeight: number = texture.$getTextureHeight();
-                var destW: number = Math.round(texture.$getScaleBitmapWidth());
-                var destH: number = Math.round(texture.$getScaleBitmapHeight());
-                var sourceWidth: number = texture._sourceWidth;
-                var sourceHeight: number = texture._sourceHeight;
+                let offsetX: number = Math.round(texture._offsetX) + this._frameRect.x;
+                let offsetY: number = Math.round(texture._offsetY) + this._frameRect.y;
+                let bitmapWidth: number = texture._bitmapWidth;
+                let bitmapHeight: number = texture._bitmapHeight;
+                let textureWidth: number = texture.$getTextureWidth();
+                let textureHeight: number = texture.$getTextureHeight();
+                let destW: number = Math.round(texture.$getScaleBitmapWidth());
+                let destH: number = Math.round(texture.$getScaleBitmapHeight());
+                let sourceWidth: number = texture._sourceWidth;
+                let sourceHeight: number = texture._sourceHeight;
 
                 egret.sys.BitmapNode.$updateTextureData
                     //before 3.1.7 egret.Bitmap.$drawImage
@@ -372,10 +372,10 @@ module fairygui {
 
         $measureContentBounds(bounds: egret.Rectangle): void {
             if (this._texture) {
-                var x: number = this._frameRect.x;
-                var y: number = this._frameRect.y;
-                var w: number = this._texture.$getTextureWidth();
-                var h: number = this._texture.$getTextureHeight();
+                let x: number = this._frameRect.x;
+                let y: number = this._frameRect.y;
+                let w: number = this._texture.$getTextureWidth();
+                let h: number = this._texture.$getTextureHeight();
 
                 bounds.setTo(x, y, w, h);
             }

@@ -2,7 +2,7 @@
 module fairygui {
 
     export class GGraph extends GObject {
-        private _graphics: egret.Graphics;
+        private _graphics: egret.Graphics|null;
 
         private _type: number = 0;
         private _lineSize: number = 0;
@@ -10,7 +10,7 @@ module fairygui {
         private _lineAlpha: number;
         private _fillColor: number = 0;
         private _fillAlpha: number;
-        private _cornerRadius: Array<number>;
+        private _cornerRadius: Array<number>|null;
 
         public constructor() {
             super();
@@ -32,7 +32,7 @@ module fairygui {
         }
 
         public drawRect(lineSize: number, lineColor: number, lineAlpha: number,
-            fillColor: number, fillAlpha: number, corner: Array<number> = null): void {
+            fillColor: number, fillAlpha: number, corner: Array<number>|null = null): void {
             this._type = 1;
             this._lineSize = lineSize;
             this._lineColor = lineColor;
@@ -73,12 +73,16 @@ module fairygui {
         }
 
         private drawCommon(): void {
-            this.graphics;
-
+            if(this.graphics == null) {
+                return;
+            }
+            if(this._graphics == null){
+                return;
+            }
             this._graphics.clear();
 
-            var w: number = this.width;
-            var h: number = this.height;
+            let w: number = this.width;
+            let h: number = this.height;
             if (w == 0 || h == 0)
                 return;
 
@@ -115,7 +119,7 @@ module fairygui {
             target.setXY(this.x, this.y);
             target.setSize(this.width, this.height);
 
-            var index: number = this._parent.getChildIndex(this);
+            let index: number = this._parent.getChildIndex(this);
             this._parent.addChildAt(target, index);
             target.relations.copyFrom(this.relations);
 
@@ -126,7 +130,7 @@ module fairygui {
             if (this._parent == null)
                 throw "parent not set";
 
-            var index: number = this._parent.getChildIndex(this);
+            let index: number = this._parent.getChildIndex(this);
             this._parent.addChildAt(target, index);
         }
 
@@ -134,7 +138,7 @@ module fairygui {
             if (this._parent == null)
                 throw "parent not set";
 
-            var index: number = this._parent.getChildIndex(this);
+            let index: number = this._parent.getChildIndex(this);
             index++;
             this._parent.addChildAt(target, index);
         }
@@ -146,7 +150,7 @@ module fairygui {
 
         private delayCreateDisplayObject(): void {
             if (!this.displayObject) {
-                var sprite: UISprite = new UISprite();
+                let sprite: UISprite = new UISprite();
                 sprite["$owner"] = this;
                 this.setDisplayObject(sprite);
                 if (this._parent)
@@ -173,11 +177,16 @@ module fairygui {
             }
 
             if (this.displayObject instanceof UISprite) {
-                if ((<UISprite>(this.displayObject)).hitArea == null)
-                    (<UISprite>(this.displayObject)).hitArea = new egret.Rectangle(0, 0, this.width, this.height);
+                let hitArea:egret.Rectangle|null = (<UISprite>(this.displayObject)).hitArea;
+                if (hitArea == null) {
+                    hitArea = new egret.Rectangle(0, 0, this.width, this.height);
+                    (<UISprite>(this.displayObject)).hitArea = hitArea;
+                }
                 else {
-                    (<UISprite>(this.displayObject)).hitArea.width = this.width;
-                    (<UISprite>(this.displayObject)).hitArea.height = this.height;
+                    hitArea.width = this.width;
+                    hitArea.height = this.height;
+                    // (<UISprite>(this.displayObject)).hitArea.width = this.width;
+                    // (<UISprite>(this.displayObject)).hitArea.height = this.height;
                 }
             }
         }
@@ -185,10 +194,10 @@ module fairygui {
         public setup_beforeAdd(buffer: ByteBuffer, beginPos: number): void {
             buffer.seek(beginPos, 5);
 
-            var type: number = buffer.readByte();
+            let type: number = buffer.readByte();
             if (type != 0) {
                 this._lineSize = buffer.readInt();
-                var c: number = buffer.readColor(true);
+                let c: number = buffer.readColor(true);
                 this._lineColor = c & 0xFFFFFF;
                 this._lineAlpha = ((c >> 24) & 0xFF) / 0xFF;
                 c = buffer.readColor(true);
@@ -196,11 +205,11 @@ module fairygui {
                 this._fillAlpha = ((c >> 24) & 0xFF) / 0xFF;
                 if (buffer.readBool()) {
                     this._cornerRadius = new Array<number>(4);
-                    for (var i: number = 0; i < 4; i++)
+                    for (let i: number = 0; i < 4; i++)
                         this._cornerRadius[i] = buffer.readFloat();
                 }
 
-                var sprite: UISprite = new UISprite();
+                let sprite: UISprite = new UISprite();
                 sprite["$owner"] = this;
                 this.setDisplayObject(sprite);
             }

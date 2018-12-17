@@ -2,47 +2,48 @@
 module fairygui {
 
     export class GLabel extends GComponent {
-        protected _titleObject: GObject;
-        protected _iconObject: GObject;
+        protected _titleObject: GObject|null;
+        protected _iconObject: GObject|null;
 
         public constructor() {
             super();
         }
 
-        public get icon(): string {
+        public get icon(): string|null {
             if (this._iconObject != null)
                 return this._iconObject.icon;
+            return null;
         }
 
-        public set icon(value: string) {
+        public set icon(value: string|null) {
             if (this._iconObject != null)
                 this._iconObject.icon = value;
             this.updateGear(7);
         }
 
-        public get title(): string {
+        public get title(): string|null {
             if (this._titleObject)
                 return this._titleObject.text;
             else
                 return null;
         }
 
-        public set title(value: string) {
+        public set title(value: string|null) {
             if (this._titleObject)
                 this._titleObject.text = value;
             this.updateGear(6);
         }
 
-        public get text(): string {
+        public get text(): string|null {
             return this.title;
         }
 
-        public set text(value: string) {
+        public set text(value: string|null) {
             this.title = value;
         }
 
         public get titleColor(): number {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 return tf.color;
             else
@@ -50,7 +51,7 @@ module fairygui {
         }
 
         public set titleColor(value: number) {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 tf.color = value;
             this.updateGear(4);
@@ -65,7 +66,7 @@ module fairygui {
         }
 
         public get titleFontSize(): number {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 return tf.fontSize;
             else
@@ -73,24 +74,24 @@ module fairygui {
         }
 
         public set titleFontSize(value: number) {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 tf.fontSize = value;
         }
 
         public set editable(val: boolean) {
-            if (this._titleObject)
+            if (this._titleObject && this._titleObject.asTextInput)
                 this._titleObject.asTextInput.editable = val;
         }
 
         public get editable(): boolean {
             if (this._titleObject && (this._titleObject instanceof GTextInput))
-                return this._titleObject.asTextInput.editable;
+                return this._titleObject.asTextInput ? this._titleObject.asTextInput.editable : false;
             else
                 return false;
         }
 
-        public getTextField(): GTextField {
+        public getTextField(): GTextField|null {
             if (this._titleObject instanceof GTextField)
                 return (<GTextField>this._titleObject);
             else if (this._titleObject instanceof GLabel)
@@ -115,7 +116,7 @@ module fairygui {
             if (buffer.readByte() != this.packageItem.objectType)
                 return;
 
-            var str: string;
+            let str: string|null;
             str = buffer.readS();
             if (str != null)
                 this.title = str;
@@ -124,12 +125,12 @@ module fairygui {
                 this.icon = str;
             if (buffer.readBool())
                 this.titleColor = buffer.readColor();
-            var iv: number = buffer.readInt();
+            let iv: number = buffer.readInt();
             if (iv != 0)
                 this.titleFontSize = iv;
 
             if (buffer.readBool()) {
-                var input: GTextInput = this.getTextField() as GTextInput;
+                let input: GTextInput = this.getTextField() as GTextInput;
                 if (input != null) {
                     str = buffer.readS();
                     if (str != null)

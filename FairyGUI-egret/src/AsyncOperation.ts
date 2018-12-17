@@ -17,9 +17,9 @@ module fairygui {
         }
 
         public createObject(pkgName: string, resName: string): void {
-            var pkg: UIPackage = UIPackage.getByName(pkgName);
+            let pkg: UIPackage = UIPackage.getByName(pkgName);
             if (pkg) {
-                var pi: PackageItem = pkg.getItemByName(resName);
+                let pi: PackageItem = pkg.getItemByName(resName);
                 if (!pi)
                     throw new Error("resource not found: " + resName);
 
@@ -30,7 +30,7 @@ module fairygui {
         }
 
         public createObjectFromURL(url: string): void {
-            var pi: PackageItem = UIPackage.getItemByURL(url);
+            let pi: PackageItem|null = UIPackage.getItemByURL(url);
             if (pi)
                 this.internalCreateObject(pi);
             else
@@ -40,9 +40,9 @@ module fairygui {
         public cancel(): void {
             GTimers.inst.remove(this.run, this);
             this._itemList.length = 0;
-            var cnt: number = this._objectPool.length;
+            let cnt: number = this._objectPool.length;
             if (cnt > 0) {
-                for (var i: number = 0; i < cnt; i++)
+                for (let i: number = 0; i < cnt; i++)
                     this._objectPool[i].dispose();
                 this._objectPool.length = 0;
             }
@@ -52,7 +52,7 @@ module fairygui {
             this._itemList.length = 0;
             this._objectPool.length = 0;
 
-            var di: DisplayListItem = new DisplayListItem(item, 0);
+            let di: DisplayListItem = new DisplayListItem(item, 0);
             di.childCount = this.collectComponentChildren(item);
             this._itemList.push(di);
 
@@ -61,26 +61,26 @@ module fairygui {
         }
 
         private collectComponentChildren(item: PackageItem): number {
-            var buffer: ByteBuffer = item.rawData;
+            let buffer: ByteBuffer = item.rawData;
             buffer.seek(0, 2);
 
-            var di: DisplayListItem;
-            var pi: PackageItem;
-            var i: number;
-            var dataLen: number;
-            var curPos: number;
-            var pkg: UIPackage;
+            let di: DisplayListItem;
+            let pi: PackageItem|null;
+            let i: number;
+            let dataLen: number;
+            let curPos: number;
+            let pkg: UIPackage;
 
-            var dcnt: number = buffer.readShort();
+            let dcnt: number = buffer.readShort();
             for (i = 0; i < dcnt; i++) {
                 dataLen = buffer.readShort();
                 curPos = buffer.position;
 
                 buffer.seek(curPos, 0);
 
-                var type: number = buffer.readByte();
-                var src: string = buffer.readS();
-                var pkgId: string = buffer.readS();
+                let type: number = buffer.readByte();
+                let src: string|null = buffer.readS();
+                let pkgId: string|null = buffer.readS();
 
                 buffer.position = curPos;
 
@@ -112,14 +112,14 @@ module fairygui {
         private collectListChildren(buffer: ByteBuffer): number {
             buffer.seek(buffer.position, 8);
 
-            var listItemCount: number = 0;
-            var i: number;
-            var nextPos: number;
-            var url: string;
-            var pi: PackageItem;
-            var di: DisplayListItem;
-            var defaultItem: string = buffer.readS();
-            var itemCount: number = buffer.readShort();
+            let listItemCount: number = 0;
+            let i: number;
+            let nextPos: number;
+            let url: string|null;
+            let pi: PackageItem|null;
+            let di: DisplayListItem;
+            let defaultItem: string|null = buffer.readS();
+            let itemCount: number = buffer.readShort();
 
             for (i = 0; i < itemCount; i++) {
                 nextPos = buffer.readShort();
@@ -146,18 +146,18 @@ module fairygui {
         }
 
         private run(): void {
-            var obj: GObject;
-            var di: DisplayListItem;
-            var poolStart: number;
-            var k: number;
-            var t: number = egret.getTimer();
-            var frameTime: number = fairygui.UIConfig.frameTimeForAsyncUIConstruction;
-            var totalItems: number = this._itemList.length;
+            let obj: GObject|null;
+            let di: DisplayListItem;
+            let poolStart: number;
+            let k: number;
+            let t: number = egret.getTimer();
+            let frameTime: number = fairygui.UIConfig.frameTimeForAsyncUIConstruction;
+            let totalItems: number = this._itemList.length;
 
             while (this._index < totalItems) {
                 di = this._itemList[this._index];
                 if (di.packageItem != null) {
-                    obj = UIObjectFactory.newObject(di.packageItem);
+                    obj = <GObject>UIObjectFactory.newObject(di.packageItem);
                     obj.packageItem = di.packageItem;
                     this._objectPool.push(obj);
 
@@ -175,7 +175,7 @@ module fairygui {
                     UIPackage._constructing--;
                 }
                 else {
-                    obj = UIObjectFactory.newObject2(di.type);
+                    obj = <GObject>UIObjectFactory.newObject2(di.type);
                     this._objectPool.push(obj);
 
                     if (di.type == ObjectType.List && di.listItemCount > 0) {
@@ -194,7 +194,7 @@ module fairygui {
             }
 
             GTimers.inst.remove(this.run, this);
-            var result: GObject = this._objectPool[0];
+            let result: GObject = this._objectPool[0];
             this._itemList.length = 0;
             this._objectPool.length = 0;
 
@@ -204,12 +204,12 @@ module fairygui {
     }
 
     class DisplayListItem {
-        public packageItem: PackageItem;
+        public packageItem: PackageItem|null;
         public type: ObjectType;
         public childCount: number;
         public listItemCount: number;
 
-        public constructor(packageItem: PackageItem, type: ObjectType) {
+        public constructor(packageItem: PackageItem|null, type: ObjectType) {
             this.packageItem = packageItem;
             this.type = type;
         }

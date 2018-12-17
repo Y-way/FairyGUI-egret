@@ -10,10 +10,10 @@ module fairygui {
         }
 
         public clear(): void {
-            for (var i1 in this._pool) {
-				var arr: Array<GObject> = this._pool[i1];
-				var cnt: number = arr.length;
-				for (var i: number = 0; i < cnt; i++)
+            for (let i1 in this._pool) {
+				let arr: Array<GObject> = this._pool[i1];
+				let cnt: number = arr.length;
+				for (let i: number = 0; i < cnt; i++)
 					arr[i].dispose();
 			}
 			this._pool = {};
@@ -24,27 +24,25 @@ module fairygui {
             return this._count;
         }
 
-        public getObject(url: string): GObject {
-            url = UIPackage.normalizeURL(url);
+        public getObject(url: string): GObject|null {
+            url = <string>UIPackage.normalizeURL(url);
             if (url == null)
                 return null;
 
-            var arr: Array<GObject> = this._pool[url];
+            let arr: Array<GObject> = this._pool[url];
             if (arr != null && arr.length) {
                 this._count--;
-                return arr.shift();
+                return arr.shift() as GObject;
             }
-
-            var child: GObject = UIPackage.createObjectFromURL(url);
-            return child;
+            return UIPackage.createObjectFromURL(url);
         }
 
         public returnObject(obj: GObject): void {
-            var url: string = obj.resourceURL;
+            let url: string|null = obj.resourceURL;
             if (!url)
                 return;
 
-            var arr: Array<GObject> = this._pool[url];
+            let arr: Array<GObject> = this._pool[url];
             if (arr == null) {
                 arr = new Array<GObject>();
                 this._pool[url] = arr;

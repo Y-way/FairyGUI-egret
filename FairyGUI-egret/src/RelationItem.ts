@@ -3,7 +3,7 @@ module fairygui {
 
     export class RelationItem {
         private _owner: GObject;
-        private _target: GObject;
+        private _target: GObject|null;
         private _defs: Array<RelationDef>;
         private _targetX: number;
         private _targetY: number;
@@ -19,7 +19,7 @@ module fairygui {
             return this._owner;
         }
 
-        public set target(value: GObject) {
+        public set target(value: GObject|null) {
             if (this._target != value) {
                 if (this._target)
                     this.releaseRefTarget(this._target);
@@ -29,7 +29,7 @@ module fairygui {
             }
         }
 
-        public get target(): GObject {
+        public get target(): GObject|null {
             return this._target;
         }
 
@@ -40,9 +40,9 @@ module fairygui {
                 return;
             }
 
-            var length: number = this._defs.length;
-            for (var i: number = 0; i < length; i++) {
-                var def: RelationDef = this._defs[i];
+            let length: number = this._defs.length;
+            for (let i: number = 0; i < length; i++) {
+                let def: RelationDef = this._defs[i];
                 if (def.type == relationType)
                     return;
             }
@@ -57,7 +57,7 @@ module fairygui {
                 return;
             }
 
-            var info: RelationDef = new RelationDef();
+            let info: RelationDef = new RelationDef();
             info.percent = usePercent;
             info.type = relationType;
             info.axis = (relationType <= RelationType.Right_Right || relationType == RelationType.Width || relationType >= RelationType.LeftExt_Left && relationType <= RelationType.RightExt_Right) ? 0 : 1;
@@ -77,8 +77,8 @@ module fairygui {
                 return;
             }
 
-            var dc: number = this._defs.length;
-            for (var k: number = 0; k < dc; k++) {
+            let dc: number = this._defs.length;
+            for (let k: number = 0; k < dc; k++) {
                 if (this._defs[k].type == relationType) {
                     this._defs.splice(k, 1);
                     break;
@@ -90,10 +90,10 @@ module fairygui {
             this.target = source.target;
 
             this._defs.length = 0;
-            var length: number = source._defs.length;
-            for (var i: number = 0; i < length; i++) {
-                var info: RelationDef = source._defs[i];
-                var info2: RelationDef = new RelationDef();
+            let length: number = source._defs.length;
+            for (let i: number = 0; i < length; i++) {
+                let info: RelationDef = source._defs[i];
+                let info2: RelationDef = new RelationDef();
                 info2.copyFrom(info);
                 this._defs.push(info2);
             }
@@ -111,12 +111,12 @@ module fairygui {
         }
 
         public applyOnSelfResized(dWidth: number, dHeight: number, applyPivot: boolean): void {
-            var ox: number = this._owner.x;
-            var oy: number = this._owner.y;
+            let ox: number = this._owner.x;
+            let oy: number = this._owner.y;
 
-            var length: number = this._defs.length;
-            for (var i: number = 0; i < length; i++) {
-                var info: RelationDef = this._defs[i];
+            let length: number = this._defs.length;
+            for (let i: number = 0; i < length; i++) {
+                let info: RelationDef = this._defs[i];
                 switch (info.type) {
                     case RelationType.Center_Center:
                         this._owner.x -= (0.5 - (applyPivot ? this._owner.pivotX : 0)) * dWidth;
@@ -145,9 +145,9 @@ module fairygui {
                 this._owner.updateGearFromRelations(1, ox, oy);
 
                 if (this._owner.parent != null) {
-                    var len: number = this._owner.parent._transitions.length;
+                    let len: number = this._owner.parent._transitions.length;
                     if (len > 0) {
-                        for (var i: number = 0; i < len; ++i) {
+                        for (let i: number = 0; i < len; ++i) {
                             this._owner.parent._transitions[i].updateFromRelations(this._owner.id, ox, oy);
                         }
                     }
@@ -156,7 +156,7 @@ module fairygui {
         }
 
         private applyOnXYChanged(info: RelationDef, dx: number, dy: number): void {
-            var tmp: number;
+            let tmp: number;
 
             switch (info.type) {
                 case RelationType.Left_Left:
@@ -214,8 +214,11 @@ module fairygui {
         }
 
         private applyOnSizeChanged(info: RelationDef): void {
-            var pos: number = 0, pivot: number = 0, delta: number = 0;
-            var v: number, tmp: number;
+            if(this._target == null){
+                return;
+            }
+            let pos: number = 0, pivot: number = 0, delta: number = 0;
+            let v: number, tmp: number;
 
             if (info.axis == 0) {
                 if (this._target != this._owner.parent) {
@@ -494,7 +497,9 @@ module fairygui {
                 target.addEventListener(GObject.XY_CHANGED, this.__targetXYChanged, this);
             target.addEventListener(GObject.SIZE_CHANGED, this.__targetSizeChanged, this);
             target.addEventListener(GObject.SIZE_DELAY_CHANGE, this.__targetSizeWillChange, this);
-
+            if(this._target == null){
+                return;
+            }
             this._targetX = this._target.x;
             this._targetY = this._target.y;
             this._targetWidth = this._target._width;
@@ -509,24 +514,24 @@ module fairygui {
 
         private __targetXYChanged(evt: Event): void {
             if (this._owner.relations.handling != null || this._owner.group != null && this._owner.group._updating) {
-                this._targetX = this._target.x;
-                this._targetY = this._target.y;
+                this._targetX = (this._target as GObject).x;
+                this._targetY = (this._target as GObject).y;
                 return;
             }
 
             this._owner.relations.handling = this._target;
 
-            var ox: number = this._owner.x;
-            var oy: number = this._owner.y;
-            var dx: number = this._target.x - this._targetX;
-            var dy: number = this._target.y - this._targetY;
-            var length: number = this._defs.length;
-            for (var i: number = 0; i < length; i++) {
-                var info: RelationDef = this._defs[i];
+            let ox: number = this._owner.x;
+            let oy: number = this._owner.y;
+            let dx: number = (this._target as GButton).x - this._targetX;
+            let dy: number = (this._target as GButton).y - this._targetY;
+            let length: number = this._defs.length;
+            for (let i: number = 0; i < length; i++) {
+                let info: RelationDef = this._defs[i];
                 this.applyOnXYChanged(info, dx, dy);
             }
-            this._targetX = this._target.x;
-            this._targetY = this._target.y;
+            this._targetX = (this._target as GButton).x;
+            this._targetY = (this._target as GButton).y;
 
             if (ox != this._owner.x || oy != this._owner.y) {
                 ox = this._owner.x - ox;
@@ -535,9 +540,9 @@ module fairygui {
                 this._owner.updateGearFromRelations(1, ox, oy);
 
                 if (this._owner.parent != null) {
-                    var len: number = this._owner.parent._transitions.length;
+                    let len: number = this._owner.parent._transitions.length;
                     if (len > 0) {
-                        for (var i: number = 0; i < len; ++i) {
+                        for (let i: number = 0; i < len; ++i) {
                             this._owner.parent._transitions[i].updateFromRelations(this._owner.id, ox, oy);
                         }
                     }
@@ -552,17 +557,17 @@ module fairygui {
 
             this._owner.relations.handling = this._target;
 
-            var ox: number = this._owner.x;
-            var oy: number = this._owner.y;
-            var ow: number = this._owner._rawWidth;
-            var oh: number = this._owner._rawHeight;
-            var length: number = this._defs.length;
-            for (var i: number = 0; i < length; i++) {
-                var info: RelationDef = this._defs[i];
+            let ox: number = this._owner.x;
+            let oy: number = this._owner.y;
+            let ow: number = this._owner._rawWidth;
+            let oh: number = this._owner._rawHeight;
+            let length: number = this._defs.length;
+            for (let i: number = 0; i < length; i++) {
+                let info: RelationDef = this._defs[i];
                 this.applyOnSizeChanged(info);
             }
-            this._targetWidth = this._target._width;
-            this._targetHeight = this._target._height;
+            this._targetWidth = (this._target as GButton)._width;
+            this._targetHeight = (this._target as GButton)._height;
 
             if (ox != this._owner.x || oy != this._owner.y) {
                 ox = this._owner.x - ox;
@@ -571,9 +576,9 @@ module fairygui {
                 this._owner.updateGearFromRelations(1, ox, oy);
 
                 if (this._owner.parent != null) {
-                    var len: number = this._owner.parent._transitions.length;
+                    let len: number = this._owner.parent._transitions.length;
                     if (len > 0) {
-                        for (var i: number = 0; i < len; ++i) {
+                        for (let i: number = 0; i < len; ++i) {
                             this._owner.parent._transitions[i].updateFromRelations(this._owner.id, ox, oy);
                         }
                     }

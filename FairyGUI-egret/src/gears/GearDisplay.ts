@@ -14,7 +14,7 @@ module fairygui {
         }
 
         protected init(): void {
-            this.pages = null;
+            this.pages = <any>null;
         }
 
         public apply(): void {
@@ -23,7 +23,7 @@ module fairygui {
                 this._displayLockToken = 1;
 
             if (this.pages == null || this.pages.length == 0
-                || this.pages.indexOf(this._controller.selectedPageId) != -1)
+                || this.pages.indexOf(<string>this._controller.selectedPageId) != -1)
                 this._visible = 1;
             else
                 this._visible = 0;

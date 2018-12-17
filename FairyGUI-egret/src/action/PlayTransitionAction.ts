@@ -7,7 +7,7 @@ module fairygui {
         public delay: number;
         public stopOnExit: boolean;
 
-        private _currentTransition: Transition;
+        private _currentTransition: Transition|null;
 
         public constructor() {
             super();
@@ -18,7 +18,7 @@ module fairygui {
         }
 
         protected enter(controller: Controller): void {
-            var trans: Transition = controller.parent.getTransition(this.transitionName);
+            let trans: Transition|null = (controller.parent as GComponent).getTransition(this.transitionName);
             if (trans) {
                 if (this._currentTransition && this._currentTransition.playing)
                     trans.changePlayTimes(this.playTimes);
@@ -38,7 +38,7 @@ module fairygui {
         public setup(buffer:ByteBuffer): void {
             super.setup(buffer);
 
-			this.transitionName = buffer.readS();
+			this.transitionName = <string>buffer.readS();
 			this.playTimes = buffer.readInt();
 			this.delay = buffer.readFloat();
 			this.stopOnExit = buffer.readBool();

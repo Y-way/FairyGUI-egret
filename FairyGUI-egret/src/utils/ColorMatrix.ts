@@ -18,7 +18,7 @@ module fairygui {
         private static LUMA_B: number = 0.114;
 
         public static create(p_brightness: number, p_contrast: number, p_saturation: number, p_hue: number): ColorMatrix {
-            var ret: ColorMatrix = new ColorMatrix();
+            let ret: ColorMatrix = new ColorMatrix();
             ret.adjustColor(p_brightness, p_contrast, p_saturation, p_hue);
             return ret;
         }
@@ -30,7 +30,7 @@ module fairygui {
 
         // public methods:
         public reset(): void {
-            for (var i: number = 0; i < ColorMatrix.LENGTH; i++) {
+            for (let i: number = 0; i < ColorMatrix.LENGTH; i++) {
                 this.matrix[i] = ColorMatrix.IDENTITY_MATRIX[i];
             }
         }
@@ -61,8 +61,8 @@ module fairygui {
 
         public adjustContrast(p_val: number): void {
             p_val = this.cleanValue(p_val, 1);
-            var s: number = p_val + 1;
-            var o: number = 128 * (1 - s);
+            let s: number = p_val + 1;
+            let o: number = 128 * (1 - s);
             this.multiplyMatrix([
                 s, 0, 0, 0, o,
                 0, s, 0, 0, o,
@@ -75,10 +75,10 @@ module fairygui {
             p_val = this.cleanValue(p_val, 1);
             p_val += 1;
 
-            var invSat: number = 1 - p_val;
-            var invLumR: number = invSat * ColorMatrix.LUMA_R;
-            var invLumG: number = invSat * ColorMatrix.LUMA_G;
-            var invLumB: number = invSat * ColorMatrix.LUMA_B;
+            let invSat: number = 1 - p_val;
+            let invLumR: number = invSat * ColorMatrix.LUMA_R;
+            let invLumG: number = invSat * ColorMatrix.LUMA_G;
+            let invLumB: number = invSat * ColorMatrix.LUMA_B;
 
             this.multiplyMatrix([
                 (invLumR + p_val), invLumG, invLumB, 0, 0,
@@ -92,8 +92,8 @@ module fairygui {
             p_val = this.cleanValue(p_val, 1);
             p_val *= Math.PI;
 
-            var cos: number = Math.cos(p_val);
-            var sin: number = Math.sin(p_val);
+            let cos: number = Math.cos(p_val);
+            let sin: number = Math.sin(p_val);
 
             this.multiplyMatrix([
                 ((ColorMatrix.LUMA_R + (cos * (1 - ColorMatrix.LUMA_R))) + (sin * -(ColorMatrix.LUMA_R))), ((ColorMatrix.LUMA_G + (cos * -(ColorMatrix.LUMA_G))) + (sin * -(ColorMatrix.LUMA_G))), ((ColorMatrix.LUMA_B + (cos * -(ColorMatrix.LUMA_B))) + (sin * (1 - ColorMatrix.LUMA_B))), 0, 0,
@@ -109,25 +109,25 @@ module fairygui {
         }
 
         public clone(): ColorMatrix {
-            var result: ColorMatrix = new ColorMatrix();
+            let result: ColorMatrix = new ColorMatrix();
             result.copyMatrix(this.matrix);
             return result;
         }
 
         protected copyMatrix(p_matrix: Array<number>): void {
-            var l: number = ColorMatrix.LENGTH;
-            for (var i: number = 0; i < l; i++) {
+            let l: number = ColorMatrix.LENGTH;
+            for (let i: number = 0; i < l; i++) {
                 this.matrix[i] = p_matrix[i];
             }
         }
 
         protected multiplyMatrix(p_matrix: Array<number>): void {
-            var col: Array<number> = [];
+            let col: Array<number> = [];
 
-            var i: number = 0;
+            let i: number = 0;
 
-            for (var y: number = 0; y < 4; ++y) {
-                for (var x: number = 0; x < 5; ++x) {
+            for (let y: number = 0; y < 4; ++y) {
+                for (let x: number = 0; x < 5; ++x) {
                     col[i + x] = p_matrix[i] * this.matrix[x] +
                         p_matrix[i + 1] * this.matrix[x + 5] +
                         p_matrix[i + 2] * this.matrix[x + 10] +

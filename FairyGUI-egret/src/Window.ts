@@ -4,9 +4,9 @@ module fairygui {
     export class Window extends GComponent {
         private _contentPane: GComponent;
         private _modalWaitPane: GObject;
-        private _closeButton: GObject;
-        private _dragArea: GObject;
-        private _contentArea: GObject;
+        private _closeButton: GObject|null;
+        private _dragArea: GObject|null;
+        private _contentArea: GObject|null;
         private _frame: GComponent;
         private _modal: boolean;
 
@@ -60,11 +60,11 @@ module fairygui {
             return this._frame;
         }
 
-        public get closeButton(): GObject {
+        public get closeButton(): GObject|null {
             return this._closeButton;
         }
 
-        public set closeButton(value: GObject) {
+        public set closeButton(value: GObject|null) {
             if (this._closeButton != null)
                 this._closeButton.removeClickListener(this.closeEventHandler, this);
             this._closeButton = value;
@@ -72,11 +72,11 @@ module fairygui {
                 this._closeButton.addClickListener(this.closeEventHandler, this);
         }
 
-        public get dragArea(): GObject {
+        public get dragArea(): GObject|null {
             return this._dragArea;
         }
 
-        public set dragArea(value: GObject) {
+        public set dragArea(value: GObject|null) {
             if (this._dragArea != value) {
                 if (this._dragArea != null) {
                     this._dragArea.draggable = false;
@@ -86,18 +86,18 @@ module fairygui {
                 this._dragArea = value;
                 if (this._dragArea != null) {
                     if ((this._dragArea instanceof GGraph) && (<GGraph><any>(this._dragArea)).displayObject == null)
-                        this._dragArea.asGraph.drawRect(0, 0, 0, 0, 0);
+                        (this._dragArea as GGraph).drawRect(0, 0, 0, 0, 0);
                     this._dragArea.draggable = true;
                     this._dragArea.addEventListener(DragEvent.DRAG_START, this.__dragStart, this);
                 }
             }
         }
 
-        public get contentArea(): GObject {
+        public get contentArea(): GObject|null {
             return this._contentArea;
         }
 
-        public set contentArea(value: GObject) {
+        public set contentArea(value: GObject|null) {
             this._contentArea = value;
         }
 
@@ -115,7 +115,7 @@ module fairygui {
         }
 
         public hideImmediately(): void {
-            var r: GRoot = (this.parent instanceof GRoot) ? <GRoot><any>(this.parent) : null;
+            let r: GRoot|null = (this.parent instanceof GRoot) ? <GRoot><any>(this.parent) : null;
             if (!r)
                 r = GRoot.inst;
             r.hideWindowImmediately(this);
@@ -162,7 +162,7 @@ module fairygui {
 
             if (UIConfig.windowModalWaiting) {
                 if (!this._modalWaitPane)
-                    this._modalWaitPane = UIPackage.createObjectFromURL(UIConfig.windowModalWaiting);
+                    this._modalWaitPane = UIPackage.createObjectFromURL(UIConfig.windowModalWaiting) as GObject;
 
                 this.layoutModalWaitPane();
 
@@ -172,7 +172,7 @@ module fairygui {
 
         protected layoutModalWaitPane(): void {
             if (this._contentArea != null) {
-                var pt: egret.Point = this._frame.localToGlobal();
+                let pt: egret.Point = this._frame.localToGlobal();
                 pt = this.globalToLocal(pt.x, pt.y, pt);
                 this._modalWaitPane.setXY(pt.x + this._contentArea.x, pt.y + this._contentArea.y);
                 this._modalWaitPane.setSize(this._contentArea.width, this._contentArea.height);
@@ -205,9 +205,9 @@ module fairygui {
 
             if (this._uiSources.length > 0) {
                 this._loading = false;
-                var cnt: number = this._uiSources.length;
-                for (var i: number = 0; i < cnt; i++) {
-                    var lib: IUISource = this._uiSources[i];
+                let cnt: number = this._uiSources.length;
+                for (let i: number = 0; i < cnt; i++) {
+                    let lib: IUISource = this._uiSources[i];
                     if (!lib.loaded) {
                         lib.load(this.__uiLoadComplete, this);
                         this._loading = true;
@@ -239,9 +239,9 @@ module fairygui {
         }
 
         private __uiLoadComplete(): void {
-            var cnt: number = this._uiSources.length;
-            for (var i: number = 0; i < cnt; i++) {
-                var lib: IUISource = this._uiSources[i];
+            let cnt: number = this._uiSources.length;
+            for (let i: number = 0; i < cnt; i++) {
+                let lib: IUISource = this._uiSources[i];
                 if (!lib.loaded)
                     return;
             }

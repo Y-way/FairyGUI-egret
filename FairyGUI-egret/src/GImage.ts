@@ -16,16 +16,16 @@ module fairygui {
         private getColorMatrix(): egret.ColorMatrixFilter {
             if (this._matrix)
                 return this._matrix;
-            var filters: egret.Filter[] = this.filters;
+            let filters: egret.Filter[] = this.filters;
             if (filters) {
-                for (var i: number = 0; i < filters.length; i++) {
+                for (let i: number = 0; i < filters.length; i++) {
                     if (egret.is(filters[i], "egret.ColorMatrixFilter")) {
                         this._matrix = <egret.ColorMatrixFilter>filters[i];
                         return this._matrix;
                     }
                 }
             }
-            var cmf: egret.ColorMatrixFilter = new egret.ColorMatrixFilter();
+            let cmf: egret.ColorMatrixFilter = new egret.ColorMatrixFilter();
             this._matrix = cmf;
             filters = filters || [];
             filters.push(cmf);
@@ -46,8 +46,8 @@ module fairygui {
         }
 
         private applyColor(): void {
-            var cfm: egret.ColorMatrixFilter = this.getColorMatrix();
-            var matrix: number[] = cfm.matrix;
+            let cfm: egret.ColorMatrixFilter = this.getColorMatrix();
+            let matrix: number[] = cfm.matrix;
             matrix[0] = ((this._color >> 16) & 0xFF) / 255;
             matrix[6] = ((this._color >> 8) & 0xFF) / 255;
             matrix[12] = (this._color & 0xFF) / 255;
@@ -85,7 +85,7 @@ module fairygui {
             }
             this.initWidth = this.sourceWidth;
             this.initHeight = this.sourceHeight;
-            this._content.scale9Grid = null;
+            this._content.scale9Grid = <any>null;
             this._content.fillMode = egret.BitmapFillMode.SCALE;
             this._content.texture = value;
         }
@@ -114,7 +114,7 @@ module fairygui {
             this.setSize(this.sourceWidth, this.sourceHeight);
 
             this.packageItem.load();
-            this._content.texture = this.packageItem.texture;
+            this._content.texture = <any>this.packageItem.texture;
         }
 
         protected handleXYChanged(): void {

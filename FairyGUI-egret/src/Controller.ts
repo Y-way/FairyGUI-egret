@@ -9,7 +9,7 @@ module fairygui {
         private _actions: Array<ControllerAction>;
 
         public name: string;
-        public parent: GComponent;
+        public parent: GComponent|null;
         public autoRadioGroupDepth: boolean;
         public changing: boolean = false;
 
@@ -35,7 +35,8 @@ module fairygui {
             if (this._selectedIndex != value) {
                 if (value > this._pageIds.length - 1)
                     throw "index out of bounds: " + value;
-
+                if(this.parent == null)
+                    throw "parent is null: " + value;
                 this.changing = true;
                 this._previousIndex = this._selectedIndex;
                 this._selectedIndex = value;
@@ -52,7 +53,8 @@ module fairygui {
             if (this._selectedIndex != value) {
                 if (value > this._pageIds.length - 1)
                     throw "index out of bounds: " + value;
-
+                if(this.parent == null)
+                    throw "parent is null: " + value;
                 this.changing = true;
                 this._previousIndex = this._selectedIndex;
                 this._selectedIndex = value;
@@ -65,15 +67,19 @@ module fairygui {
             return this._previousIndex;
         }
 
-        public get selectedPage(): string {
+        public get selectedPage(): string|null {
             if (this._selectedIndex == -1)
                 return null;
             else
                 return this._pageNames[this._selectedIndex];
         }
 
-        public set selectedPage(val: string) {
-            var i: number = this._pageNames.indexOf(val);
+        public set selectedPage(val: string|null) {
+            if(val == null){
+                this.selectedIndex = 0;
+                return;
+            }
+            let i: number = this._pageNames.indexOf(val);
             if (i == -1)
                 i = 0;
             this.selectedIndex = i;
@@ -81,13 +87,13 @@ module fairygui {
 
         //功能和设置selectedPage一样，但不会触发事件
         public setSelectedPage(value: string): void {
-            var i: number = this._pageNames.indexOf(value);
+            let i: number = this._pageNames.indexOf(value);
             if (i == -1)
                 i = 0;
             this.setSelectedIndex(i);
         }
 
-        public get previousPage(): string {
+        public get previousPage(): string|null {
             if (this._previousIndex == -1)
                 return null;
             else
@@ -107,7 +113,7 @@ module fairygui {
         }
 
         public addPageAt(name: string, index: number = 0): void {
-            var nid: string = "" + (Controller._nextPageId++);
+            let nid: string = "" + (Controller._nextPageId++);
             if (index == this._pageIds.length) {
                 this._pageIds.push(nid);
                 this._pageNames.push(name);
@@ -119,14 +125,17 @@ module fairygui {
         }
 
         public removePage(name: string): void {
-            var i: number = this._pageNames.indexOf(name);
+            let i: number = this._pageNames.indexOf(name);
             if (i != -1) {
                 this._pageIds.splice(i, 1);
                 this._pageNames.splice(i, 1);
                 if (this._selectedIndex >= this._pageIds.length)
                     this.selectedIndex = this._selectedIndex - 1;
-                else
+                else {
+                    if(this.parent == null)
+                        throw "parent is null: " + name;
                     this.parent.applyController(this);
+                }
             }
         }
 
@@ -135,8 +144,11 @@ module fairygui {
             this._pageNames.splice(index, 1);
             if (this._selectedIndex >= this._pageIds.length)
                 this.selectedIndex = this._selectedIndex - 1;
-            else
+            else {
+                if(this.parent == null)
+                    throw "parent is null: " + name;
                 this.parent.applyController(this);
+            }
         }
 
         public clearPages(): void {
@@ -144,8 +156,11 @@ module fairygui {
             this._pageNames.length = 0;
             if (this._selectedIndex != -1)
                 this.selectedIndex = -1;
-            else
+            else {
+                if(this.parent == null)
+                    throw "parent is null: " + name;
                 this.parent.applyController(this);
+            }
         }
 
         public hasPage(aName: string): boolean {
@@ -156,16 +171,16 @@ module fairygui {
             return this._pageIds.indexOf(aId);
         }
 
-        public getPageIdByName(aName: string): string {
-            var i: number = this._pageNames.indexOf(aName);
+        public getPageIdByName(aName: string): string|null {
+            let i: number = this._pageNames.indexOf(aName);
             if (i != -1)
                 return this._pageIds[i];
             else
                 return null;
         }
 
-        public getPageNameById(aId: string): string {
-            var i: number = this._pageIds.indexOf(aId);
+        public getPageNameById(aId: string): string|null {
+            let i: number = this._pageIds.indexOf(aId);
             if (i != -1)
                 return this._pageNames[i];
             else
@@ -176,27 +191,30 @@ module fairygui {
             return this._pageIds[index];
         }
 
-        public get selectedPageId(): string {
+        public get selectedPageId(): string|null {
             if (this._selectedIndex == -1)
                 return null;
             else
                 return this._pageIds[this._selectedIndex];
         }
 
-        public set selectedPageId(val: string) {
-            var i: number = this._pageIds.indexOf(val);
+        public set selectedPageId(val: string|null) {
+            if(val == null){
+                return;
+            }
+            let i: number = this._pageIds.indexOf(val);
             this.selectedIndex = i;
         }
 
         public set oppositePageId(val: string) {
-            var i: number = this._pageIds.indexOf(val);
+            let i: number = this._pageIds.indexOf(val);
             if (i > 0)
                 this.selectedIndex = 0;
             else if (this._pageIds.length > 1)
                 this.selectedIndex = 1;
         }
 
-        public get previousPageId(): string {
+        public get previousPageId(): string|null {
             if (this._previousIndex == -1)
                 return null;
             else
@@ -205,28 +223,28 @@ module fairygui {
 
         public runActions(): void {
             if (this._actions) {
-                var cnt: number = this._actions.length;
-                for (var i: number = 0; i < cnt; i++)
-                    this._actions[i].run(this, this.previousPageId, this.selectedPageId);
+                let cnt: number = this._actions.length;
+                for (let i: number = 0; i < cnt; i++)
+                    this._actions[i].run(this, <string>this.previousPageId, <string>this.selectedPageId);
             }
         }
 
         public setup(buffer: ByteBuffer): void {
-            var beginPos: number = buffer.position;
+            let beginPos: number = buffer.position;
             buffer.seek(beginPos, 0);
 
-            this.name = buffer.readS();
+            this.name = <string>buffer.readS();
             this.autoRadioGroupDepth = buffer.readBool();
 
             buffer.seek(beginPos, 1);
 
-            var i: number;
-            var nextPos: number;
-            var cnt: number = buffer.readShort();
+            let i: number;
+            let nextPos: number;
+            let cnt: number = buffer.readShort();
 
             for (i = 0; i < cnt; i++) {
-                this._pageIds.push(buffer.readS());
-                this._pageNames.push(buffer.readS());
+                this._pageIds.push(<string>buffer.readS());
+                this._pageNames.push(<string>buffer.readS());
             }
 
             buffer.seek(beginPos, 2);
@@ -240,7 +258,7 @@ module fairygui {
                     nextPos = buffer.readShort();
                     nextPos += buffer.position;
 
-                    var action: ControllerAction = ControllerAction.createAction(buffer.readByte());
+                    let action: ControllerAction = ControllerAction.createAction(buffer.readByte()) as ControllerAction;
                     action.setup(buffer);
                     this._actions.push(action);
 

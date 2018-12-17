@@ -127,7 +127,7 @@ module fairygui {
 
             buffer.seek(beginPos, 4);
 
-            var str: string = buffer.readS();
+            let str: string|null = buffer.readS();
             if (str != null)
                 this._promptText = str;
 
@@ -135,7 +135,7 @@ module fairygui {
             if (str != null)
                 this._textField.restrict = str;
 
-            var iv: number = buffer.readInt();
+            let iv: number = buffer.readInt();
             if (iv != 0)
                 this._textField.maxChars = iv;
             iv = buffer.readInt();

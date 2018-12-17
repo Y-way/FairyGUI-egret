@@ -5,7 +5,7 @@ module fairygui {
         public fromPage: string[];
         public toPage: string[];
 
-        public static createAction(type: number): ControllerAction {
+        public static createAction(type: number): ControllerAction|null {
             switch (type) {
                 case 0:
                     return new PlayTransitionAction();
@@ -36,18 +36,18 @@ module fairygui {
         }
 
         public setup(buffer: ByteBuffer): void {
-            var cnt: number;
-            var i: number;
+            let cnt: number;
+            let i: number;
 
             cnt = buffer.readShort();
             this.fromPage = [];
             for (i = 0; i < cnt; i++)
-                this.fromPage[i] = buffer.readS();
+                this.fromPage[i] = <string>buffer.readS();
 
             cnt = buffer.readShort();
             this.toPage = [];
             for (i = 0; i < cnt; i++)
-                this.toPage[i] = buffer.readS();
+                this.toPage[i] = <string>buffer.readS();
         }
     }
 }

@@ -16,7 +16,7 @@ module fairygui {
         }
 
         protected addStatus(pageId: string, buffer:ByteBuffer): void {
-            var gv: GearAnimationValue;
+            let gv: GearAnimationValue;
             if (pageId == null)
                 gv = this._default;
             else {
@@ -30,7 +30,7 @@ module fairygui {
         public apply(): void {
             this._owner._gearLocked = true;
 
-            var gv: GearAnimationValue = this._storage[this._controller.selectedPageId];
+            let gv: GearAnimationValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv)
                 gv = this._default;
 
@@ -41,10 +41,10 @@ module fairygui {
         }
 
         public updateState(): void {
-            var gv: GearAnimationValue = this._storage[this._controller.selectedPageId];
+            let gv: GearAnimationValue = this._storage[<string>this._controller.selectedPageId];
             if (!gv) {
                 gv = new GearAnimationValue();
-                this._storage[this._controller.selectedPageId] = gv;
+                this._storage[<string>this._controller.selectedPageId] = gv;
             }
 
             gv.frame = (<any>this._owner).frame;

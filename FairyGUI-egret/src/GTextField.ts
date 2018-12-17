@@ -25,7 +25,7 @@ module fairygui {
         protected _textHeight: number = 0;
         protected _requireRender: boolean;
 
-        protected _bitmapFont: BitmapFont;
+        protected _bitmapFont: BitmapFont|null;
         protected _lines: Array<LineInfo>;
         protected _bitmapPool: Array<egret.Bitmap>;
 
@@ -88,7 +88,7 @@ module fairygui {
         }
 
         protected updateTextFieldText(): void {
-            var text2: string = this._text;
+            let text2: string = this._text;
             if (this._templateVars != null)
                 text2 = this.parseTemplate(text2);
             if (this._ubbEnabled)
@@ -290,7 +290,7 @@ module fairygui {
             this._textField.size = this._fontSize;
             this._bitmapFont = null;
             if (ToolSet.startsWith(this._font, "ui://")) {
-                var pi: PackageItem = UIPackage.getItemByURL(this._font);
+                let pi: PackageItem|null = UIPackage.getItemByURL(this._font);
                 if (pi)
                     this._bitmapFont = <BitmapFont>pi.owner.getItemAsset(pi);
             }
@@ -349,7 +349,7 @@ module fairygui {
             if (this._textHeight > 0)
                 this._textHeight += 4;
 
-            var w: number, h: number = 0;
+            let w: number, h: number = 0;
             if (this._widthAutoSize) {
                 w = this._textWidth;
                 this._textField.width = w;
@@ -378,9 +378,9 @@ module fairygui {
         private renderWithBitmapFont(updateBounds: boolean): void {
             this.switchBitmapMode(true);
 
-            var cnt: number = this._bitmapContainer.numChildren;
-            for (var i: number = 0; i < cnt; i++) {
-                var obj: egret.DisplayObject = this._bitmapContainer.getChildAt(i);
+            let cnt: number = this._bitmapContainer.numChildren;
+            for (let i: number = 0; i < cnt; i++) {
+                let obj: egret.DisplayObject = this._bitmapContainer.getChildAt(i);
                 this._bitmapPool.push(<egret.Bitmap>obj);
             }
             this._bitmapContainer.removeChildren();
@@ -390,28 +390,29 @@ module fairygui {
             else
                 LineInfo.returnList(this._lines);
 
-            var letterSpacing: number = this._letterSpacing;
-            var lineSpacing: number = this._leading - 1;
-            var rectWidth: number = this.width - GTextField.GUTTER_X * 2;
-            var lineWidth: number = 0, lineHeight: number = 0, lineTextHeight: number = 0;
-            var glyphWidth: number = 0, glyphHeight: number = 0;
-            var wordChars: number = 0, wordStart: number = 0, wordEnd: number = 0;
-            var lastLineHeight: number = 0;
-            var lineBuffer: string = "";
-            var lineY: number = GTextField.GUTTER_Y;
-            var line: LineInfo;
-            var wordWrap: boolean = !this._widthAutoSize && this._textField.multiline;
-            var fontScale: number = this._bitmapFont.resizable ? this._fontSize / this._bitmapFont.size : 1;
+            let letterSpacing: number = this._letterSpacing;
+            let lineSpacing: number = this._leading - 1;
+            let rectWidth: number = this.width - GTextField.GUTTER_X * 2;
+            let lineWidth: number = 0, lineHeight: number = 0, lineTextHeight: number = 0;
+            let glyphWidth: number = 0, glyphHeight: number = 0;
+            let wordChars: number = 0, wordStart: number = 0, wordEnd: number = 0;
+            let lastLineHeight: number = 0;
+            let lineBuffer: string = "";
+            let lineY: number = GTextField.GUTTER_Y;
+            let line: LineInfo;
+            let wordWrap: boolean = !this._widthAutoSize && this._textField.multiline;
+            let fontScale: number = (this._bitmapFont as BitmapFont).resizable ? this._fontSize / (this._bitmapFont as BitmapFont).size : 1;
             this._textWidth = 0;
             this._textHeight = 0;
 
-            var text2: string = this._text;
+            let text2: string = this._text;
             if (this._templateVars != null)
                 text2 = this.parseTemplate(text2);
-            var textLength: number = text2.length;
-            for (var offset: number = 0; offset < textLength; ++offset) {
-                var ch: string = text2.charAt(offset);
-                var cc: number = ch.charCodeAt(0);
+            let textLength: number = text2.length;
+            let glyph: BMGlyph;
+            for (let offset: number = 0; offset < textLength; ++offset) {
+                let ch: string = text2.charAt(offset);
+                let cc: number = ch.charCodeAt(0);
 
                 if (cc == 10) {
                     lineBuffer += ch;
@@ -460,7 +461,7 @@ module fairygui {
                     glyphHeight = this._fontSize;
                 }
                 else {
-                    var glyph: BMGlyph = this._bitmapFont.glyphs[ch];
+                    glyph = (this._bitmapFont as BitmapFont).glyphs[ch];
                     if (glyph) {
                         glyphWidth = Math.ceil(glyph.advance * fontScale);
                         glyphHeight = Math.ceil(glyph.lineHeight * fontScale);
@@ -493,7 +494,7 @@ module fairygui {
                     }
                     else if (wordChars > 0 && wordEnd > 0) {//if word had broken, move it to new line
                         lineBuffer += ch;
-                        var len: number = lineBuffer.length - wordChars;
+                        let len: number = lineBuffer.length - wordChars;
                         line.text = ToolSet.trimRight(lineBuffer.substr(0, len));
                         line.width = wordEnd;
                         lineBuffer = lineBuffer.substr(len);
@@ -538,7 +539,7 @@ module fairygui {
             if (this._textWidth > 0)
                 this._textWidth += GTextField.GUTTER_X * 2;
 
-            var count: number = this._lines.length;
+            let count: number = this._lines.length;
             if (count == 0) {
                 this._textHeight = 0;
             }
@@ -547,7 +548,7 @@ module fairygui {
                 this._textHeight = line.y + line.height + GTextField.GUTTER_Y;
             }
 
-            var w: number, h: number = 0;
+            let w: number, h: number = 0;
             if (this._widthAutoSize) {
                 if (this._textWidth == 0)
                     w = 0;
@@ -575,12 +576,12 @@ module fairygui {
             if (w == 0 || h == 0)
                 return;
 
-            var charX: number = GTextField.GUTTER_X;
-            var lineIndent: number = 0;
-            var charIndent: number = 0;
+            let charX: number = GTextField.GUTTER_X;
+            let lineIndent: number = 0;
+            let charIndent: number = 0;
             rectWidth = this.width - GTextField.GUTTER_X * 2;
-            var lineCount: number = this._lines.length;
-            for (var i: number = 0; i < lineCount; i++) {
+            let lineCount: number = this._lines.length;
+            for (let i: number = 0; i < lineCount; i++) {
                 line = this._lines[i];
                 charX = GTextField.GUTTER_X;
 
@@ -591,9 +592,9 @@ module fairygui {
                 else
                     lineIndent = 0;
                 textLength = line.text.length;
-                for (var j: number = 0; j < textLength; j++) {
-                    ch = line.text.charAt(j);
-                    cc = ch.charCodeAt(0);
+                for (let j: number = 0; j < textLength; j++) {
+                    let ch:string = line.text.charAt(j);
+                    let cc:number = ch.charCodeAt(0);
 
                     if (cc == 10)
                         continue;
@@ -603,12 +604,12 @@ module fairygui {
                         continue;
                     }
 
-                    glyph = this._bitmapFont.glyphs[ch];
+                    glyph = (this._bitmapFont as BitmapFont).glyphs[ch];
                     if (glyph != null) {
                         charIndent = (line.height + line.textHeight) / 2 - Math.ceil(glyph.lineHeight * fontScale);
-                        var bm: egret.Bitmap;
+                        let bm: egret.Bitmap|null;
                         if (this._bitmapPool.length)
-                            bm = this._bitmapPool.pop();
+                            bm = this._bitmapPool.pop() as egret.Bitmap;
                         else {
                             bm = new egret.Bitmap();
                             bm.smoothing = true;
@@ -616,7 +617,7 @@ module fairygui {
                         bm.x = charX + lineIndent + Math.ceil(glyph.offsetX * fontScale);
                         bm.y = line.y + charIndent + Math.ceil(glyph.offsetY * fontScale);
                         bm["$backupY"] = bm.y;
-                        bm.texture = glyph.texture;
+                        bm.texture = <egret.Texture>glyph.texture;
                         bm.scaleX = fontScale;
                         bm.scaleY = fontScale;
                         this._bitmapContainer.addChild(bm);
@@ -661,10 +662,10 @@ module fairygui {
         }
 
         protected parseTemplate(template: string): string {
-            var pos1: number = 0, pos2: number, pos3: number;
-            var tag: string;
-            var value: string;
-            var result: string = "";
+            let pos1: number = 0, pos2: number, pos3: number;
+            let tag: string;
+            let value: string;
+            let result: string = "";
             while ((pos2 = template.indexOf("{", pos1)) != -1) {
                 if (pos2 > 0 && template.charCodeAt(pos2 - 1) == 92)//\
                 {
@@ -739,11 +740,11 @@ module fairygui {
         }
 
         private doAlign(): void {
-            var yOffset: number;
+            let yOffset: number;
             if (this._verticalAlign == VertAlignType.Top || this._textHeight == 0)
                 yOffset = GTextField.GUTTER_Y;
             else {
-                var dh: number = this.height - this._textHeight;
+                let dh: number = this.height - this._textHeight;
                 if (dh < 0)
                     dh = 0;
                 if (this._verticalAlign == VertAlignType.Middle)
@@ -752,9 +753,9 @@ module fairygui {
                     yOffset = Math.floor(dh);
             }
 
-            var cnt: number = this._bitmapContainer.numChildren;
-            for (var i: number = 0; i < cnt; i++) {
-                var obj: egret.DisplayObject = this._bitmapContainer.getChildAt(i);
+            let cnt: number = this._bitmapContainer.numChildren;
+            for (let i: number = 0; i < cnt; i++) {
+                let obj: egret.DisplayObject = this._bitmapContainer.getChildAt(i);
                 obj.y = obj["$backupY"] + yOffset;
             }
         }
@@ -764,7 +765,7 @@ module fairygui {
 
             buffer.seek(beginPos, 5);
 
-            this._font = buffer.readS();
+            this._font = <string>buffer.readS();
             this._fontSize = buffer.readShort();
             this._color = buffer.readColor();
             this.align = buffer.readByte();
@@ -798,7 +799,7 @@ module fairygui {
 
             buffer.seek(beginPos, 6);
 
-            var str: string = buffer.readS();
+            let str: string|null = buffer.readS();
             if (str != null)
                 this.text = str;
             this._sizeDirty = false;
@@ -817,11 +818,11 @@ module fairygui {
 
         public static borrow(): LineInfo {
             if (LineInfo.pool.length) {
-                var ret: LineInfo = LineInfo.pool.pop();
+                let ret: LineInfo = LineInfo.pool.pop() as LineInfo;
                 ret.width = 0;
                 ret.height = 0;
                 ret.textHeight = 0;
-                ret.text = null;
+                ret.text = <any>null;
                 ret.y = 0;
                 return ret;
             }
@@ -834,9 +835,9 @@ module fairygui {
         }
 
         public static returnList(value: Array<LineInfo>): void {
-            var length: number = value.length;
-            for (var i: number = 0; i < length; i++) {
-                var li: LineInfo = value[i];
+            let length: number = value.length;
+            for (let i: number = 0; i < length; i++) {
+                let li: LineInfo = value[i];
                 LineInfo.pool.push(li);
             }
             value.length = 0;

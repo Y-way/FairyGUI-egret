@@ -15,7 +15,7 @@ module fairygui {
         }
 
         protected addStatus(pageId: string, buffer: ByteBuffer): void {
-            var gv: egret.Point;
+            let gv: egret.Point;
             if (pageId == null)
                 gv = this._default;
             else {
@@ -27,7 +27,7 @@ module fairygui {
         }
 
         public apply(): void {
-            var pt: egret.Point = this._storage[this._controller.selectedPageId];
+            let pt: egret.Point = this._storage[<string>this._controller.selectedPageId];
             if (!pt)
                 pt = this._default;
 
@@ -75,10 +75,10 @@ module fairygui {
         }
 
         public updateState(): void {
-            var pt: egret.Point = this._storage[this._controller.selectedPageId];
+            let pt: egret.Point = this._storage[<string>this._controller.selectedPageId];
             if (!pt) {
                 pt = new egret.Point();
-                this._storage[this._controller.selectedPageId] = pt;
+                this._storage[<string>this._controller.selectedPageId] = pt;
             }
 
             pt.x = this._owner.x;
@@ -89,8 +89,8 @@ module fairygui {
             if (this._controller == null || this._storage == null)
                 return;
 
-            for (var key in this._storage) {
-                var pt: egret.Point = this._storage[key];
+            for (let key in this._storage) {
+                let pt: egret.Point = this._storage[key];
                 pt.x += dx;
                 pt.y += dy;
             }

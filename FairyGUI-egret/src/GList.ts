@@ -211,11 +211,11 @@ module fairygui {
             return this._pool;
         }
 
-        public getFromPool(url: string = null): GObject {
+        public getFromPool(url: string|null = null): GObject|null {
             if (!url)
                 url = this._defaultItem;
 
-            var obj: GObject = this._pool.getObject(url);
+            let obj: GObject|null = this._pool.getObject(url);
             if (obj != null)
                 obj.visible = true;
             return obj;
@@ -230,7 +230,7 @@ module fairygui {
             super.addChildAt(child, index);
 
             if (child instanceof GButton) {
-                var button: GButton = <GButton><any>child;
+                let button: GButton = <GButton><any>child;
                 button.selected = false;
                 button.changeStateOnClick = false;
             }
@@ -239,26 +239,25 @@ module fairygui {
             return child;
         }
 
-        public addItem(url: string = null): GObject {
+        public addItem(url: string|null = null): GObject {
             if (!url)
                 url = this._defaultItem;
-
-            return this.addChild(UIPackage.createObjectFromURL(url));
+            return this.addChild(<GObject>UIPackage.createObjectFromURL(url));
         }
 
-        public addItemFromPool(url: string = null): GObject {
-            return this.addChild(this.getFromPool(url));
+        public addItemFromPool(url: string|null = null): GObject {
+            return this.addChild(<GObject>this.getFromPool(url));
         }
 
         public removeChildAt(index: number, dispose: boolean = false): GObject {
-            var child: GObject = super.removeChildAt(index, dispose);
+            let child: GObject = super.removeChildAt(index, dispose);
             child.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.__clickItem, this);
 
             return child;
         }
 
         public removeChildToPoolAt(index: number = 0): void {
-            var child: GObject = super.removeChildAt(index);
+            let child: GObject = super.removeChildAt(index);
             this.returnToPool(child);
         }
 
@@ -271,15 +270,15 @@ module fairygui {
             if (endIndex < 0 || endIndex >= this._children.length)
                 endIndex = this._children.length - 1;
 
-            for (var i: number = beginIndex; i <= endIndex; ++i)
+            for (let i: number = beginIndex; i <= endIndex; ++i)
                 this.removeChildToPoolAt(beginIndex);
         }
 
         public get selectedIndex(): number {
-            var i: number;
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if ((ii.obj instanceof GButton) && (<any>ii.obj).selected
                         || ii.obj == null && ii.selected) {
                         if (this._loop)
@@ -290,9 +289,9 @@ module fairygui {
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null && obj.selected)
                         return i;
                 }
@@ -312,14 +311,14 @@ module fairygui {
         }
 
         public getSelection(): Array<number> {
-            var ret: Array<number> = new Array<number>();
-            var i: number;
+            let ret: Array<number> = new Array<number>();
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if ((ii.obj instanceof GButton) && (<any>ii.obj).selected
                         || ii.obj == null && ii.selected) {
-                        var j: number = i;
+                        let j: number = i;
                         if (this._loop) {
                             j = i % this._numItems;
                             if (ret.indexOf(j) != -1)
@@ -330,9 +329,9 @@ module fairygui {
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null && obj.selected)
                         ret.push(i);
                 }
@@ -353,9 +352,9 @@ module fairygui {
                 this.scrollToView(index);
 
             this._lastSelectedIndex = index;
-            var obj: GButton = null;
+            let obj: GButton|null = null;
             if (this._virtual) {
-                var ii: ItemInfo = this._virtualItems[index];
+                let ii: ItemInfo = this._virtualItems[index];
                 if (ii.obj != null)
                     obj = ii.obj.asButton;
                 ii.selected = true;
@@ -373,9 +372,9 @@ module fairygui {
             if (this._selectionMode == ListSelectionMode.None)
                 return;
 
-            var obj: GButton = null;
+            let obj: GButton|null = null;
             if (this._virtual) {
-                var ii: ItemInfo = this._virtualItems[index];
+                let ii: ItemInfo = this._virtualItems[index];
                 if (ii.obj != null)
                     obj = ii.obj.asButton;
                 ii.selected = false;
@@ -388,19 +387,19 @@ module fairygui {
         }
 
         public clearSelection(): void {
-            var i: number;
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if (ii.obj instanceof GButton)
                         (<any>ii.obj).selected = false;
                     ii.selected = false;
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null)
                         obj.selected = false;
                 }
@@ -408,10 +407,10 @@ module fairygui {
         }
 
         private clearSelectionExcept(g: GObject): void {
-            var i: number;
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if (ii.obj != g) {
                         if ((ii.obj instanceof GButton))
                             (<any>ii.obj).selected = false;
@@ -420,9 +419,9 @@ module fairygui {
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null && obj != g)
                         obj.selected = false;
                 }
@@ -432,11 +431,11 @@ module fairygui {
         public selectAll(): void {
             this.checkVirtualList();
 
-            var last: number = -1;
-            var i: number;
+            let last: number = -1;
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if ((ii.obj instanceof GButton) && !(<any>ii.obj).selected) {
                         (<any>ii.obj).selected = true;
                         last = i;
@@ -445,9 +444,9 @@ module fairygui {
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null && !obj.selected) {
                         obj.selected = true;
                         last = i;
@@ -466,11 +465,11 @@ module fairygui {
         public selectReverse(): void {
             this.checkVirtualList();
 
-            var last: number = -1;
-            var i: number;
+            let last: number = -1;
+            let i: number;
             if (this._virtual) {
                 for (i = 0; i < this._realNumItems; i++) {
-                    var ii: ItemInfo = this._virtualItems[i];
+                    let ii: ItemInfo = this._virtualItems[i];
                     if (ii.obj instanceof GButton) {
                         (<any>ii.obj).selected = !(<any>ii.obj).selected;
                         if ((<any>ii.obj).selected)
@@ -480,9 +479,9 @@ module fairygui {
                 }
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 for (i = 0; i < cnt; i++) {
-                    var obj: GButton = this._children[i].asButton;
+                    let obj: GButton|null = this._children[i].asButton;
                     if (obj != null) {
                         obj.selected = !obj.selected;
                         if (obj.selected)
@@ -497,10 +496,14 @@ module fairygui {
 
 
         public handleArrowKey(dir: number = 0): void {
-            var index: number = this.selectedIndex;
+            let index: number = this.selectedIndex;
             if (index == -1)
                 return;
-
+            let current: GObject;
+            let k: number = 0;
+            let i: number = 0;
+            let obj: GObject;
+            let cnt: number = 0;
             switch (dir) {
                 case 1://up
                     if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowVertical) {
@@ -511,10 +514,9 @@ module fairygui {
                         }
                     }
                     else if (this._layout == ListLayoutType.FlowHorizontal || this._layout == ListLayoutType.Pagination) {
-                        var current: GObject = this._children[index];
-                        var k: number = 0;
-                        for (var i: number = index - 1; i >= 0; i--) {
-                            var obj: GObject = this._children[i];
+                        current = this._children[index];
+                        for (i = index - 1; i >= 0; i--) {
+                            obj = this._children[i];
                             if (obj.y != current.y) {
                                 current = obj;
                                 break;
@@ -543,7 +545,7 @@ module fairygui {
                     else if (this._layout == ListLayoutType.FlowVertical) {
                         current = this._children[index];
                         k = 0;
-                        var cnt: number = this._children.length;
+                        cnt = this._children.length;
                         for (i = index + 1; i < cnt; i++) {
                             obj = this._children[i];
                             if (obj.x != current.x) {
@@ -630,13 +632,13 @@ module fairygui {
             if (this._scrollPane != null && this._scrollPane.isDragged)
                 return;
 
-            var item: GObject = <GObject><any>(evt.currentTarget);
+            let item: GObject = <GObject><any>(evt.currentTarget);
             this.setSelectionOnEvent(item);
 
             if (this._scrollPane && this.scrollItemToViewOnClick)
                 this._scrollPane.scrollToView(item, true);
 
-            var ie: ItemEvent = new ItemEvent(ItemEvent.CLICK, item);
+            let ie: ItemEvent = new ItemEvent(ItemEvent.CLICK, item);
             ie.stageX = evt.stageX;
             ie.stageY = evt.stageY;
             this.dispatchEvent(ie);
@@ -646,9 +648,9 @@ module fairygui {
             if (!(item instanceof GButton) || this._selectionMode == ListSelectionMode.None)
                 return;
 
-            var dontChangeLastIndex: boolean = false;
-            var button: GButton = <GButton><any>item;
-            var index: number = this.childIndexToItemIndex(this.getChildIndex(item));
+            let dontChangeLastIndex: boolean = false;
+            let button: GButton = <GButton><any>item;
+            let index: number = this.childIndexToItemIndex(this.getChildIndex(item));
 
             if (this._selectionMode == ListSelectionMode.Single) {
                 if (!button.selected) {
@@ -660,13 +662,13 @@ module fairygui {
                 if (GRoot.shiftKeyDown) {
                     if (!button.selected) {
                         if (this._lastSelectedIndex != -1) {
-                            var min: number = Math.min(this._lastSelectedIndex, index);
-                            var max: number = Math.max(this._lastSelectedIndex, index);
+                            let min: number = Math.min(this._lastSelectedIndex, index);
+                            let max: number = Math.max(this._lastSelectedIndex, index);
                             max = Math.min(max, this.numItems - 1);
-                            var i: number;
+                            let i: number;
                             if (this._virtual) {
                                 for (i = min; i <= max; i++) {
-                                    var ii: ItemInfo = this._virtualItems[i];
+                                    let ii: ItemInfo = this._virtualItems[i];
                                     if (ii.obj instanceof GButton)
                                         (<any>ii.obj).selected = true;
                                     ii.selected = true;
@@ -674,7 +676,7 @@ module fairygui {
                             }
                             else {
                                 for (i = min; i <= max; i++) {
-                                    var obj: GButton = this.getChildAt(i).asButton;
+                                    let obj: GButton|null = this.getChildAt(i).asButton;
                                     if (obj != null)
                                         obj.selected = true;
                                 }
@@ -710,12 +712,12 @@ module fairygui {
         public resizeToFit(itemCount: number = Number.POSITIVE_INFINITY, minSize: number = 0): void {
             this.ensureBoundsCorrect();
 
-            var curCount: number = this.numItems;
+            let curCount: number = this.numItems;
             if (itemCount > curCount)
                 itemCount = curCount;
 
             if (this._virtual) {
-                var lineCount: number = Math.ceil(itemCount / this._curLineItemCount);
+                let lineCount: number = Math.ceil(itemCount / this._curLineItemCount);
                 if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal)
                     this.viewHeight = lineCount * this._itemSize.y + Math.max(0, lineCount - 1) * this._lineGap;
                 else
@@ -728,13 +730,16 @@ module fairygui {
                     this.viewWidth = minSize;
             }
             else {
-                var i: number = itemCount - 1;
-                var obj: GObject = null;
+                let i: number = itemCount - 1;
+                let obj: GObject|null = null;
                 while (i >= 0) {
                     obj = this.getChildAt(i);
                     if (!this.foldInvisibleItems || obj.visible)
                         break;
                     i--;
+                }
+                if(obj == null){
+                    return;
                 }
                 if (i < 0) {
                     if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal)
@@ -743,7 +748,7 @@ module fairygui {
                         this.viewWidth = minSize;
                 }
                 else {
-                    var size: number = 0;
+                    let size: number = 0;
                     if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal) {
                         size = obj.y + obj.height;
                         if (size < minSize)
@@ -761,10 +766,10 @@ module fairygui {
         }
 
         public getMaxItemWidth(): number {
-            var cnt: number = this._children.length;
-            var max: number = 0;
-            for (var i: number = 0; i < cnt; i++) {
-                var child: GObject = this.getChildAt(i);
+            let cnt: number = this._children.length;
+            let max: number = 0;
+            for (let i: number = 0; i < cnt; i++) {
+                let child: GObject = this.getChildAt(i);
                 if (child.width > max)
                     max = child.width;
             }
@@ -789,8 +794,8 @@ module fairygui {
         private updateSelectionController(index: number): void {
             if (this._selectionController != null && !this._selectionController.changing
                 && index < this._selectionController.pageCount) {
-                var c: Controller = this._selectionController;
-                this._selectionController = null;
+                let c: Controller = this._selectionController;
+                this._selectionController = <any>null;
                 c.selectedIndex = index;
                 this._selectionController = c;
             }
@@ -801,8 +806,8 @@ module fairygui {
                 if (!resultPoint)
                     resultPoint = new egret.Point();
 
-                var saved: number;
-                var index: number;
+                let saved: number;
+                let index: number;
                 if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal) {
                     saved = yValue;
                     GList.pos_param = yValue;
@@ -850,10 +855,10 @@ module fairygui {
                 if (this._loop)
                     index = Math.floor(this._firstIndex / this._numItems) * this._numItems + index;
 
-                var rect: egret.Rectangle;
-                var ii: ItemInfo = this._virtualItems[index];
-                var pos: number = 0;
-                var i: number;
+                let rect: egret.Rectangle;
+                let ii: ItemInfo = this._virtualItems[index];
+                let pos: number = 0;
+                let i: number;
                 if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal) {
                     for (i = this._curLineItemCount - 1; i < index; i += this._curLineItemCount)
                         pos += this._virtualItems[i].height + this._lineGap;
@@ -865,7 +870,7 @@ module fairygui {
                     rect = new egret.Rectangle(pos, 0, ii.width, this._itemSize.y);
                 }
                 else {
-                    var page: number = index / (this._curLineItemCount * this._curLineItemCount2);
+                    let page: number = index / (this._curLineItemCount * this._curLineItemCount2);
                     rect = new egret.Rectangle(page * this.viewWidth + (index % this._curLineItemCount) * (ii.width + this._columnGap),
                         (index / this._curLineItemCount) % this._curLineItemCount2 * (ii.height + this._lineGap),
                         ii.width, ii.height);
@@ -876,7 +881,7 @@ module fairygui {
                     this._scrollPane.scrollToView(rect, ani, setFirst);
             }
             else {
-                var obj: GObject = this.getChildAt(index);
+                let obj: GObject = this.getChildAt(index);
                 if (obj != null) {
                     if (this._scrollPane != null)
                         this._scrollPane.scrollToView(obj, ani, setFirst);
@@ -895,7 +900,7 @@ module fairygui {
                 return index;
 
             if (this._layout == ListLayoutType.Pagination) {
-                for (var i: number = this._firstIndex; i < this._realNumItems; i++) {
+                for (let i: number = this._firstIndex; i < this._realNumItems; i++) {
                     if (this._virtualItems[i].obj != null) {
                         index--;
                         if (index < 0)
@@ -919,11 +924,11 @@ module fairygui {
                 return index;
 
             if (this._layout == ListLayoutType.Pagination) {
-                return this.getChildIndex(this._virtualItems[index].obj);
+                return this.getChildIndex(this._virtualItems[index].obj as GObject);
             }
             else {
                 if (this._loop && this._numItems > 0) {
-                    var j: number = this._firstIndex % this._numItems;
+                    let j: number = this._firstIndex % this._numItems;
                     if (index >= j)
                         index = index - j;
                     else
@@ -969,7 +974,7 @@ module fairygui {
 
                 if (this._itemSize == null) {
                     this._itemSize = new egret.Point();
-                    var obj: GObject = this.getFromPool(null);
+                    let obj: GObject|null = this.getFromPool(null);
                     if (obj == null) {
                         throw "Virtual List must have a default list item resource.";
                     }
@@ -1020,10 +1025,10 @@ module fairygui {
                     this._realNumItems = this._numItems;
 
                 //_virtualItems的设计是只增不减的
-                var oldCount: number = this._virtualItems.length;
+                let oldCount: number = this._virtualItems.length;
                 if (this._realNumItems > oldCount) {
-                    for (i = oldCount; i < this._realNumItems; i++) {
-                        var ii: ItemInfo = new ItemInfo();
+                    for (let i:number = oldCount; i < this._realNumItems; i++) {
+                        let ii: ItemInfo = new ItemInfo();
                         ii.width = this._itemSize.x;
                         ii.height = this._itemSize.y;
 
@@ -1031,7 +1036,7 @@ module fairygui {
                     }
                 }
                 else {
-                    for (i = this._realNumItems; i < oldCount; i++)
+                    for (let i:number = this._realNumItems; i < oldCount; i++)
                         this._virtualItems[i].selected = false;
                 }
 
@@ -1042,9 +1047,9 @@ module fairygui {
                 this._refreshVirtualList();
             }
             else {
-                var cnt: number = this._children.length;
+                let cnt: number = this._children.length;
                 if (value > cnt) {
-                    for (var i: number = cnt; i < value; i++) {
+                    for (let i: number = cnt; i < value; i++) {
                         if (this.itemProvider == null)
                             this.addItemFromPool();
                         else
@@ -1055,7 +1060,7 @@ module fairygui {
                     this.removeChildrenToPool(value, cnt);
                 }
                 if (this.itemRenderer != null) {
-                    for (i = 0; i < value; i++)
+                    for (let i:number = 0; i < value; i++)
                         this.itemRenderer.call(this.callbackThisObj, i, this.getChildAt(i));
                 }
             }
@@ -1082,7 +1087,7 @@ module fairygui {
         }
 
         private _refreshVirtualList(): void {
-            var layoutChanged: boolean = this._virtualListChanged == 2;
+            let layoutChanged: boolean = this._virtualListChanged == 2;
             this._virtualListChanged = 0;
             this._eventLocked = true;
 
@@ -1127,11 +1132,11 @@ module fairygui {
                 }
             }
 
-            var ch: number = 0, cw: number = 0;
+            let ch: number = 0, cw: number = 0;
             if (this._realNumItems > 0) {
-                var i: number;
-                var len: number = Math.ceil(this._realNumItems / this._curLineItemCount) * this._curLineItemCount;
-                var len2: number = Math.min(this._curLineItemCount, this._realNumItems);
+                let i: number;
+                let len: number = Math.ceil(this._realNumItems / this._curLineItemCount) * this._curLineItemCount;
+                let len2: number = Math.min(this._curLineItemCount, this._realNumItems);
                 if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal) {
                     for (i = 0; i < len; i += this._curLineItemCount)
                         ch += this._virtualItems[i].height + this._lineGap;
@@ -1163,7 +1168,7 @@ module fairygui {
                     }
                 }
                 else {
-                    var pageCount: number = Math.ceil(len / (this._curLineItemCount * this._curLineItemCount2));
+                    let pageCount: number = Math.ceil(len / (this._curLineItemCount * this._curLineItemCount2));
                     cw = pageCount * this.viewWidth;
                     ch = this.viewHeight;
                 }
@@ -1187,9 +1192,9 @@ module fairygui {
                 return 0;
             }
 
-            var i: number;
-            var pos2: number;
-            var pos3: number;
+            let i: number;
+            let pos2: number;
+            let pos3: number;
 
             if (this.numChildren > 0 && !forceUpdate) {
                 pos2 = this.getChildAt(0).y;
@@ -1241,9 +1246,9 @@ module fairygui {
                 return 0;
             }
 
-            var i: number;
-            var pos2: number;
-            var pos3: number;
+            let i: number;
+            let pos2: number;
+            let pos3: number;
 
             if (this.numChildren > 0 && !forceUpdate) {
                 pos2 = this.getChildAt(0).x;
@@ -1295,12 +1300,12 @@ module fairygui {
                 return 0;
             }
 
-            var viewWidth: number = this.viewWidth;
-            var page: number = Math.floor(GList.pos_param / viewWidth);
-            var startIndex: number = page * (this._curLineItemCount * this._curLineItemCount2);
-            var pos2: number = page * viewWidth;
-            var i: number;
-            var pos3: number;
+            let viewWidth: number = this.viewWidth;
+            let page: number = Math.floor(GList.pos_param / viewWidth);
+            let startIndex: number = page * (this._curLineItemCount * this._curLineItemCount2);
+            let pos2: number = page * viewWidth;
+            let i: number;
+            let pos3: number;
             for (i = 0; i < this._curLineItemCount; i++) {
                 pos3 = pos2 + this._virtualItems[startIndex + i].width + this._columnGap;
                 if (pos3 > GList.pos_param) {
@@ -1317,9 +1322,8 @@ module fairygui {
         private handleScroll(forceUpdate: boolean): void {
             if (this._eventLocked)
                 return;
-
+            let enterCounter: number = 0;
             if (this._layout == ListLayoutType.SingleColumn || this._layout == ListLayoutType.FlowHorizontal) {
-                var enterCounter: number = 0;
                 while (this.handleScroll1(forceUpdate)) {
                     enterCounter++;
                     forceUpdate = false;
@@ -1352,33 +1356,33 @@ module fairygui {
         private static pos_param: number;
 
         private handleScroll1(forceUpdate: boolean): boolean {
-            var pos: number = this._scrollPane.scrollingPosY;
-            var max: number = pos + this._scrollPane.viewHeight;
-            var end: boolean = max == this._scrollPane.contentHeight;//这个标志表示当前需要滚动到最末，无论内容变化大小
+            let pos: number = this._scrollPane.scrollingPosY;
+            let max: number = pos + this._scrollPane.viewHeight;
+            let end: boolean = max == this._scrollPane.contentHeight;//这个标志表示当前需要滚动到最末，无论内容变化大小
 
             //寻找当前位置的第一条项目
             GList.pos_param = pos;
-            var newFirstIndex: number = this.getIndexOnPos1(forceUpdate);
+            let newFirstIndex: number = this.getIndexOnPos1(forceUpdate);
             pos = GList.pos_param;
             if (newFirstIndex == this._firstIndex && !forceUpdate) {
                 return false;
             }
 
-            var oldFirstIndex: number = this._firstIndex;
+            let oldFirstIndex: number = this._firstIndex;
             this._firstIndex = newFirstIndex;
-            var curIndex: number = newFirstIndex;
-            var forward: boolean = oldFirstIndex > newFirstIndex;
-            var childCount: number = this.numChildren;
-            var lastIndex: number = oldFirstIndex + childCount - 1;
-            var reuseIndex: number = forward ? lastIndex : oldFirstIndex;
-            var curX: number = 0, curY: number = pos;
-            var needRender: boolean;
-            var deltaSize: number = 0;
-            var firstItemDeltaSize: number = 0;
-            var url: string = this.defaultItem;
-            var ii: ItemInfo, ii2: ItemInfo;
-            var i: number, j: number;
-            var partSize: number = (this._scrollPane.viewWidth - this._columnGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
+            let curIndex: number = newFirstIndex;
+            let forward: boolean = oldFirstIndex > newFirstIndex;
+            let childCount: number = this.numChildren;
+            let lastIndex: number = oldFirstIndex + childCount - 1;
+            let reuseIndex: number = forward ? lastIndex : oldFirstIndex;
+            let curX: number = 0, curY: number = pos;
+            let needRender: boolean;
+            let deltaSize: number = 0;
+            let firstItemDeltaSize: number = 0;
+            let url: string = this.defaultItem;
+            let ii: ItemInfo, ii2: ItemInfo;
+            let i: number, j: number;
+            let partSize: number = (this._scrollPane.viewWidth - this._columnGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
 
             this.itemInfoVer++;
 
@@ -1390,7 +1394,7 @@ module fairygui {
                         url = this.itemProvider.call(this.callbackThisObj, curIndex % this._numItems);
                         if (url == null)
                             url = this._defaultItem;
-                        url = UIPackage.normalizeURL(url);
+                        url = <string>UIPackage.normalizeURL(url);
                     }
 
                     if (ii.obj != null && ii.obj.resourceURL != url) {
@@ -1438,9 +1442,9 @@ module fairygui {
                     else {
                         ii.obj = this._pool.getObject(url);
                         if (forward)
-                            this.addChildAt(ii.obj, curIndex - newFirstIndex);
+                            this.addChildAt(<GObject>ii.obj, curIndex - newFirstIndex);
                         else
-                            this.addChild(ii.obj);
+                            this.addChild(<GObject>ii.obj);
                     }
                     if (ii.obj instanceof GButton)
                         (<GButton><any>ii.obj).selected = ii.selected;
@@ -1452,22 +1456,22 @@ module fairygui {
 
                 if (needRender) {
                     if (this._autoResizeItem && (this._layout == ListLayoutType.SingleColumn || this._columnCount > 0))
-                        ii.obj.setSize(partSize, ii.obj.height, true);
+                        (ii.obj as GObject).setSize(partSize, (ii.obj as GObject).height, true);
 
                     this.itemRenderer.call(this.callbackThisObj, curIndex % this._numItems, ii.obj);
                     if (curIndex % this._curLineItemCount == 0) {
-                        deltaSize += Math.ceil(ii.obj.height) - ii.height;
+                        deltaSize += Math.ceil((ii.obj as GObject).height) - ii.height;
                         if (curIndex == newFirstIndex && oldFirstIndex > newFirstIndex) {
                             //当内容向下滚动时，如果新出现的项目大小发生变化，需要做一个位置补偿，才不会导致滚动跳动
-                            firstItemDeltaSize = Math.ceil(ii.obj.height) - ii.height;
+                            firstItemDeltaSize = Math.ceil((ii.obj as GObject).height) - ii.height;
                         }
                     }
-                    ii.width = Math.ceil(ii.obj.width);
-                    ii.height = Math.ceil(ii.obj.height);
+                    ii.width = Math.ceil((ii.obj as GObject).width);
+                    ii.height = Math.ceil((ii.obj as GObject).height);
                 }
 
                 ii.updateFlag = this.itemInfoVer;
-                ii.obj.setXY(curX, curY);
+                (ii.obj as GObject).setXY(curX, curY);
                 if (curIndex == newFirstIndex) //要显示多一条才不会穿帮
                     max += ii.height;
 
@@ -1492,8 +1496,8 @@ module fairygui {
 
             childCount = this._children.length;
             for (i = 0; i < childCount; i++) {
-                let obj: GObject = this._virtualItems[newFirstIndex + i].obj;
-                if (this._children[i] != obj)
+                let obj: GObject|null = this._virtualItems[newFirstIndex + i].obj;
+                if (this._children[i] != obj && obj != null)
                     this.setChildIndex(obj, i);
             }
 
@@ -1507,33 +1511,33 @@ module fairygui {
         }
 
         private handleScroll2(forceUpdate: boolean): boolean {
-            var pos: number = this._scrollPane.scrollingPosX;
-            var max: number = pos + this._scrollPane.viewWidth;
-            var end: boolean = pos == this._scrollPane.contentWidth;//这个标志表示当前需要滚动到最末，无论内容变化大小
+            let pos: number = this._scrollPane.scrollingPosX;
+            let max: number = pos + this._scrollPane.viewWidth;
+            let end: boolean = pos == this._scrollPane.contentWidth;//这个标志表示当前需要滚动到最末，无论内容变化大小
 
             //寻找当前位置的第一条项目
             GList.pos_param = pos;
-            var newFirstIndex: number = this.getIndexOnPos2(forceUpdate);
+            let newFirstIndex: number = this.getIndexOnPos2(forceUpdate);
             pos = GList.pos_param;
             if (newFirstIndex == this._firstIndex && !forceUpdate) {
                 return false;
             }
 
-            var oldFirstIndex: number = this._firstIndex;
+            let oldFirstIndex: number = this._firstIndex;
             this._firstIndex = newFirstIndex;
-            var curIndex: number = newFirstIndex;
-            var forward: boolean = oldFirstIndex > newFirstIndex;
-            var childCount: number = this.numChildren;
-            var lastIndex: number = oldFirstIndex + childCount - 1;
-            var reuseIndex: number = forward ? lastIndex : oldFirstIndex;
-            var curX: number = pos, curY: number = 0;
-            var needRender: boolean;
-            var deltaSize: number = 0;
-            var firstItemDeltaSize: number = 0;
-            var url: string = this.defaultItem;
-            var ii: ItemInfo, ii2: ItemInfo;
-            var i: number, j: number;
-            var partSize: number = (this._scrollPane.viewHeight - this._lineGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
+            let curIndex: number = newFirstIndex;
+            let forward: boolean = oldFirstIndex > newFirstIndex;
+            let childCount: number = this.numChildren;
+            let lastIndex: number = oldFirstIndex + childCount - 1;
+            let reuseIndex: number = forward ? lastIndex : oldFirstIndex;
+            let curX: number = pos, curY: number = 0;
+            let needRender: boolean;
+            let deltaSize: number = 0;
+            let firstItemDeltaSize: number = 0;
+            let url: string = this.defaultItem;
+            let ii: ItemInfo, ii2: ItemInfo;
+            let i: number, j: number;
+            let partSize: number = (this._scrollPane.viewHeight - this._lineGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
 
             this.itemInfoVer++;
 
@@ -1545,7 +1549,7 @@ module fairygui {
                         url = this.itemProvider.call(this.callbackThisObj, curIndex % this._numItems);
                         if (url == null)
                             url = this._defaultItem;
-                        url = UIPackage.normalizeURL(url);
+                        url = <string>UIPackage.normalizeURL(url);
                     }
 
                     if (ii.obj != null && ii.obj.resourceURL != url) {
@@ -1592,9 +1596,9 @@ module fairygui {
                     else {
                         ii.obj = this._pool.getObject(url);
                         if (forward)
-                            this.addChildAt(ii.obj, curIndex - newFirstIndex);
+                            this.addChildAt(<GObject>ii.obj, curIndex - newFirstIndex);
                         else
-                            this.addChild(ii.obj);
+                            this.addChild(<GObject>ii.obj);
                     }
                     if (ii.obj instanceof GButton)
                         (<GButton><any>ii.obj).selected = ii.selected;
@@ -1606,23 +1610,23 @@ module fairygui {
 
                 if (needRender) {
                     if (this._autoResizeItem && (this._layout == ListLayoutType.SingleRow || this._lineCount > 0))
-                        ii.obj.setSize(ii.obj.width, partSize, true);
+                        (ii.obj as GObject).setSize((ii.obj as GObject).width, partSize, true);
 
 
                     this.itemRenderer.call(this.callbackThisObj, curIndex % this._numItems, ii.obj);
                     if (curIndex % this._curLineItemCount == 0) {
-                        deltaSize += Math.ceil(ii.obj.width) - ii.width;
+                        deltaSize += Math.ceil((ii.obj as GObject).width) - ii.width;
                         if (curIndex == newFirstIndex && oldFirstIndex > newFirstIndex) {
                             //当内容向下滚动时，如果新出现的一个项目大小发生变化，需要做一个位置补偿，才不会导致滚动跳动
-                            firstItemDeltaSize = Math.ceil(ii.obj.width) - ii.width;
+                            firstItemDeltaSize = Math.ceil((ii.obj as GObject).width) - ii.width;
                         }
                     }
-                    ii.width = Math.ceil(ii.obj.width);
-                    ii.height = Math.ceil(ii.obj.height);
+                    ii.width = Math.ceil((ii.obj as GObject).width);
+                    ii.height = Math.ceil((ii.obj as GObject).height);
                 }
 
                 ii.updateFlag = this.itemInfoVer;
-                ii.obj.setXY(curX, curY);
+                (ii.obj as GObject).setXY(curX, curY);
                 if (curIndex == newFirstIndex) //要显示多一条才不会穿帮
                     max += ii.width;
 
@@ -1647,8 +1651,8 @@ module fairygui {
 
             childCount = this._children.length;
             for (i = 0; i < childCount; i++) {
-                let obj: GObject = this._virtualItems[newFirstIndex + i].obj;
-                if (this._children[i] != obj)
+                let obj: GObject|null = this._virtualItems[newFirstIndex + i].obj;
+                if (this._children[i] != obj && obj != null)
                     this.setChildIndex(obj, i);
             }
 
@@ -1662,35 +1666,35 @@ module fairygui {
         }
 
         private handleScroll3(forceUpdate: boolean): void {
-            var pos: number = this._scrollPane.scrollingPosX;
+            let pos: number = this._scrollPane.scrollingPosX;
 
             //寻找当前位置的第一条项目
             GList.pos_param = pos;
-            var newFirstIndex: number = this.getIndexOnPos3(forceUpdate);
+            let newFirstIndex: number = this.getIndexOnPos3(forceUpdate);
             pos = GList.pos_param;
             if (newFirstIndex == this._firstIndex && !forceUpdate)
                 return;
 
-            var oldFirstIndex: number = this._firstIndex;
+            let oldFirstIndex: number = this._firstIndex;
             this._firstIndex = newFirstIndex;
 
             //分页模式不支持不等高，所以渲染满一页就好了
 
-            var reuseIndex: number = oldFirstIndex;
-            var virtualItemCount: number = this._virtualItems.length;
-            var pageSize: number = this._curLineItemCount * this._curLineItemCount2;
-            var startCol: number = newFirstIndex % this._curLineItemCount;
-            var viewWidth: number = this.viewWidth;
-            var page: number = Math.floor(newFirstIndex / pageSize);
-            var startIndex: number = page * pageSize;
-            var lastIndex: number = startIndex + pageSize * 2; //测试两页
-            var needRender: boolean;
-            var i: number;
-            var ii: ItemInfo, ii2: ItemInfo;
-            var col: number;
-            var url: string = this._defaultItem;
-            var partWidth: number = (this._scrollPane.viewWidth - this._columnGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
-            var partHeight: number = (this._scrollPane.viewHeight - this._lineGap * (this._curLineItemCount2 - 1)) / this._curLineItemCount2;
+            let reuseIndex: number = oldFirstIndex;
+            let virtualItemCount: number = this._virtualItems.length;
+            let pageSize: number = this._curLineItemCount * this._curLineItemCount2;
+            let startCol: number = newFirstIndex % this._curLineItemCount;
+            let viewWidth: number = this.viewWidth;
+            let page: number = Math.floor(newFirstIndex / pageSize);
+            let startIndex: number = page * pageSize;
+            let lastIndex: number = startIndex + pageSize * 2; //测试两页
+            let needRender: boolean;
+            let i: number;
+            let ii: ItemInfo, ii2: ItemInfo;
+            let col: number;
+            let url: string = this._defaultItem;
+            let partWidth: number = (this._scrollPane.viewWidth - this._columnGap * (this._curLineItemCount - 1)) / this._curLineItemCount;
+            let partHeight: number = (this._scrollPane.viewHeight - this._lineGap * (this._curLineItemCount2 - 1)) / this._curLineItemCount2;
 
             this.itemInfoVer++;
 
@@ -1713,8 +1717,8 @@ module fairygui {
                 ii.updateFlag = this.itemInfoVer;
             }
 
-            var lastObj: GObject = null;
-            var insertIndex: number = 0;
+            let lastObj: GObject|null = null;
+            let insertIndex: number = 0;
             for (i = startIndex; i < lastIndex; i++) {
                 if (i >= this._realNumItems)
                     continue;
@@ -1737,7 +1741,7 @@ module fairygui {
                         reuseIndex++;
                     }
 
-                    if (insertIndex == -1)
+                    if (insertIndex == -1 && lastObj != null)
                         insertIndex = this.getChildIndex(lastObj) + 1;
 
                     if (ii.obj == null) {
@@ -1745,11 +1749,11 @@ module fairygui {
                             url = this.itemProvider(i % this._numItems);
                             if (url == null)
                                 url = this._defaultItem;
-                            url = UIPackage.normalizeURL(url);
+                            url = <string>UIPackage.normalizeURL(url);
                         }
 
                         ii.obj = this._pool.getObject(url);
-                        this.addChildAt(ii.obj, insertIndex);
+                        this.addChildAt(<GObject>ii.obj, insertIndex);
                     }
                     else {
                         insertIndex = this.setChildIndexBefore(ii.obj, insertIndex);
@@ -1770,31 +1774,31 @@ module fairygui {
                 if (needRender) {
                     if (this._autoResizeItem) {
                         if (this._curLineItemCount == this._columnCount && this._curLineItemCount2 == this._lineCount)
-                            ii.obj.setSize(partWidth, partHeight, true);
+                            (ii.obj as GObject).setSize(partWidth, partHeight, true);
                         else if (this._curLineItemCount == this._columnCount)
-                            ii.obj.setSize(partWidth, ii.obj.height, true);
+                            (ii.obj as GObject).setSize(partWidth, (ii.obj as GObject).height, true);
                         else if (this._curLineItemCount2 == this._lineCount)
-                            ii.obj.setSize(ii.obj.width, partHeight, true);
+                            (ii.obj as GObject).setSize((ii.obj as GObject).width, partHeight, true);
                     }
 
                     this.itemRenderer.call(this.callbackThisObj, i % this._numItems, ii.obj);
-                    ii.width = Math.ceil(ii.obj.width);
-                    ii.height = Math.ceil(ii.obj.height);
+                    ii.width = Math.ceil((ii.obj as GObject).width);
+                    ii.height = Math.ceil((ii.obj as GObject).height);
                 }
             }
 
             //排列item
-            var borderX: number = (startIndex / pageSize) * viewWidth;
-            var xx: number = borderX;
-            var yy: number = 0;
-            var lineHeight: number = 0;
+            let borderX: number = (startIndex / pageSize) * viewWidth;
+            let xx: number = borderX;
+            let yy: number = 0;
+            let lineHeight: number = 0;
             for (i = startIndex; i < lastIndex; i++) {
                 if (i >= this._realNumItems)
                     continue;
 
                 ii = this._virtualItems[i];
                 if (ii.updateFlag == this.itemInfoVer)
-                    ii.obj.setXY(xx, yy);
+                    (ii.obj as GObject).setXY(xx, yy);
 
                 if (ii.height > lineHeight)
                     lineHeight = ii.height;
@@ -1827,13 +1831,13 @@ module fairygui {
 
         private handleArchOrder1(): void {
             if (this._childrenRenderOrder == ChildrenRenderOrder.Arch) {
-                var mid: number = this._scrollPane.posY + this.viewHeight / 2;
-                var minDist: number = Number.POSITIVE_INFINITY;
-                var dist: number = 0;
-                var apexIndex: number = 0;
-                var cnt: number = this.numChildren;
-                for (var i: number = 0; i < cnt; i++) {
-                    var obj: GObject = this.getChildAt(i);
+                let mid: number = this._scrollPane.posY + this.viewHeight / 2;
+                let minDist: number = Number.POSITIVE_INFINITY;
+                let dist: number = 0;
+                let apexIndex: number = 0;
+                let cnt: number = this.numChildren;
+                for (let i: number = 0; i < cnt; i++) {
+                    let obj: GObject = this.getChildAt(i);
                     if (!this.foldInvisibleItems || obj.visible) {
                         dist = Math.abs(mid - obj.y - obj.height / 2);
                         if (dist < minDist) {
@@ -1848,13 +1852,13 @@ module fairygui {
 
         private handleArchOrder2(): void {
             if (this._childrenRenderOrder == ChildrenRenderOrder.Arch) {
-                var mid: number = this._scrollPane.posX + this.viewWidth / 2;
-                var minDist: number = Number.POSITIVE_INFINITY;
-                var dist: number = 0;
-                var apexIndex: number = 0;
-                var cnt: number = this.numChildren;
-                for (var i: number = 0; i < cnt; i++) {
-                    var obj: GObject = this.getChildAt(i);
+                let mid: number = this._scrollPane.posX + this.viewWidth / 2;
+                let minDist: number = Number.POSITIVE_INFINITY;
+                let dist: number = 0;
+                let apexIndex: number = 0;
+                let cnt: number = this.numChildren;
+                for (let i: number = 0; i < cnt; i++) {
+                    let obj: GObject = this.getChildAt(i);
                     if (!this.foldInvisibleItems || obj.visible) {
                         dist = Math.abs(mid - obj.x - obj.width / 2);
                         if (dist < minDist) {
@@ -1868,8 +1872,8 @@ module fairygui {
         }
 
         private handleAlign(contentWidth: number, contentHeight: number): void {
-            var newOffsetX: number = 0;
-            var newOffsetY: number = 0;
+            let newOffsetX: number = 0;
+            let newOffsetY: number = 0;
 
             if (contentHeight < this.viewHeight) {
                 if (this._verticalAlign == VertAlignType.Middle)
@@ -1901,22 +1905,22 @@ module fairygui {
             if (this._virtual)
                 return;
 
-            var i: number;
-            var child: GObject;
-            var curX: number = 0;
-            var curY: number = 0;
-            var maxWidth: number = 0;
-            var maxHeight: number = 0;
-            var cw: number = 0, ch: number = 0;
-            var j: number = 0;
-            var page: number = 0;
-            var k: number = 0;
-            var cnt: number = this._children.length;
-            var viewWidth: number = this.viewWidth;
-            var viewHeight: number = this.viewHeight;
-            var lineSize: number = 0;
-            var lineStart: number = 0;
-            var ratio: number = 0;
+            let i: number;
+            let child: GObject;
+            let curX: number = 0;
+            let curY: number = 0;
+            let maxWidth: number = 0;
+            let maxHeight: number = 0;
+            let cw: number = 0, ch: number = 0;
+            let j: number = 0;
+            let page: number = 0;
+            let k: number = 0;
+            let cnt: number = this._children.length;
+            let viewWidth: number = this.viewWidth;
+            let viewHeight: number = this.viewHeight;
+            let lineSize: number = 0;
+            let lineStart: number = 0;
+            let ratio: number = 0;
 
             if (this._layout == ListLayoutType.SingleColumn) {
                 for (i = 0; i < cnt; i++) {
@@ -2093,7 +2097,7 @@ module fairygui {
             }
             else //pagination
             {
-                var eachHeight: number;
+                let eachHeight: number = 0;
                 if (this._autoResizeItem && this._lineCount > 0)
                     eachHeight = Math.floor((viewHeight - (this._lineCount - 1) * this._lineGap) / this._lineCount);
 
@@ -2197,13 +2201,13 @@ module fairygui {
 
             buffer.seek(beginPos, 5);
 
-            var i: number;
-            var j: number;
-            var cnt: number;
-            var i1: number;
-            var i2: number;
-            var nextPos: number;
-            var str: string;
+            let i: number;
+            let j: number;
+            let cnt: number;
+            let i1: number;
+            let i2: number;
+            let nextPos: number;
+            let str: string|null;
 
             this._layout = buffer.readByte();
             this._selectionMode = buffer.readByte();
@@ -2224,9 +2228,9 @@ module fairygui {
                 this._margin.right = buffer.readInt();
             }
 
-            var overflow: number = buffer.readByte();
+            let overflow: number = buffer.readByte();
             if (overflow == OverflowType.Scroll) {
-                var savedPos: number = buffer.position;
+                let savedPos: number = buffer.position;
                 buffer.seek(beginPos, 7);
                 this.setupScroll(buffer);
                 buffer.position = savedPos;
@@ -2239,8 +2243,8 @@ module fairygui {
 
             buffer.seek(beginPos, 8);
 
-            this._defaultItem = buffer.readS();
-            var itemCount: number = buffer.readShort();
+            this._defaultItem = <string>buffer.readS();
+            let itemCount: number = buffer.readShort();
             for (i = 0; i < itemCount; i++) {
                 nextPos = buffer.readShort();
                 nextPos += buffer.position;
@@ -2254,7 +2258,7 @@ module fairygui {
                     }
                 }
 
-                var obj: GObject = this.getFromPool(str);
+                let obj: GObject|null = this.getFromPool(str);
                 if (obj != null) {
                     this.addChild(obj);
                     str = buffer.readS();
@@ -2275,7 +2279,7 @@ module fairygui {
                     if (obj instanceof GComponent) {
                         cnt = buffer.readShort();
                         for (j = 0; j < cnt; j++) {
-                            var cc: Controller = (<GComponent>obj).getController(buffer.readS());
+                            let cc: Controller|null = (<GComponent>obj).getController(<string>buffer.readS());
                             str = buffer.readS();
                             if (cc != null)
                                 cc.selectedPageId = str;
@@ -2292,16 +2296,16 @@ module fairygui {
 
             buffer.seek(beginPos, 6);
 
-            var i: number = buffer.readShort();
+            let i: number = buffer.readShort();
             if (i != -1)
-                this._selectionController = this.parent.getControllerAt(i);
+                this._selectionController = (this.parent as GComponent).getControllerAt(i);
         }
     }
 
     class ItemInfo {
         public width: number = 0;
         public height: number = 0;
-        public obj: GObject;
+        public obj: GObject|null;
         public updateFlag: number = 0;
         public selected: boolean = false;
 

@@ -14,9 +14,9 @@ module fairygui {
             if (!this.controllerName)
                 return;
 
-            var gcom: GComponent;
+            let gcom: GComponent|null = null;
             if (this.objectId) {
-                var obj: GObject = controller.parent.getChildById(this.objectId);
+                let obj: GObject|null = (controller.parent as GComponent).getChildById(this.objectId);
                 if (obj instanceof GComponent)
                     gcom = <GComponent><any>obj;
                 else
@@ -25,7 +25,7 @@ module fairygui {
             else
                 gcom = controller.parent;
             if (gcom) {
-                var cc: Controller = gcom.getController(this.controllerName);
+                let cc: Controller|null = gcom.getController(this.controllerName);
                 if (cc && cc != controller && !cc.changing)
                     cc.selectedPageId = this.targetPage;
             }
@@ -34,9 +34,9 @@ module fairygui {
         public setup(buffer: ByteBuffer): void {
             super.setup(buffer);
 
-            this.objectId = buffer.readS();
-            this.controllerName = buffer.readS();
-            this.targetPage = buffer.readS();
+            this.objectId = <string>buffer.readS();
+            this.controllerName = <string>buffer.readS();
+            this.targetPage = <string>buffer.readS();
         }
     }
 }

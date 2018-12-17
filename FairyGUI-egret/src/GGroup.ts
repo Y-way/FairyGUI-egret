@@ -73,13 +73,13 @@ module fairygui {
 
             this.handleLayout();
 
-            var cnt: number = this._parent.numChildren;
-            var i: number;
-            var child: GObject;
-            var ax: number = Number.POSITIVE_INFINITY, ay: number = Number.POSITIVE_INFINITY;
-            var ar: number = Number.NEGATIVE_INFINITY, ab: number = Number.NEGATIVE_INFINITY;
-            var tmp: number;
-            var empty: boolean = true;
+            let cnt: number = this._parent.numChildren;
+            let i: number;
+            let child: GObject;
+            let ax: number = Number.POSITIVE_INFINITY, ay: number = Number.POSITIVE_INFINITY;
+            let ar: number = Number.NEGATIVE_INFINITY, ab: number = Number.NEGATIVE_INFINITY;
+            let tmp: number;
+            let empty: boolean = true;
             for (i = 0; i < cnt; i++) {
                 child = this._parent.getChildAt(i);
                 if (child.group == this) {
@@ -114,14 +114,17 @@ module fairygui {
         }
 
         private handleLayout(): void {
+            if(this._parent == null){
+                return;
+            }
             this._updating |= 1;
 
-            var child: GObject;
-            var i: number;
-            var cnt: number;
+            let child: GObject;
+            let i: number;
+            let cnt: number;
 
             if (this._layout == GroupLayoutType.Horizontal) {
-                var curX: number = NaN;
+                let curX: number = NaN;
                 cnt = this._parent.numChildren;
                 for (i = 0; i < cnt; i++) {
                     child = this._parent.getChildAt(i);
@@ -139,7 +142,7 @@ module fairygui {
                     this.updatePercent();
             }
             else if (this._layout == GroupLayoutType.Vertical) {
-                var curY: number = NaN;
+                let curY: number = NaN;
                 cnt = this._parent.numChildren;
                 for (i = 0; i < cnt; i++) {
                     child = this._parent.getChildAt(i);
@@ -161,12 +164,15 @@ module fairygui {
         }
 
         private updatePercent(): void {
+            if(this._parent == null){
+                return;
+            }
             this._percentReady = true;
 
-            var cnt: number = this._parent.numChildren;
-            var i: number;
-            var child: GObject;
-            var size: number = 0;
+            let cnt: number = this._parent.numChildren;
+            let i: number;
+            let child: GObject;
+            let size: number = 0;
             if (this._layout == GroupLayoutType.Horizontal) {
                 for (i = 0; i < cnt; i++) {
                     child = this._parent.getChildAt(i);
@@ -215,9 +221,9 @@ module fairygui {
 
             this._updating |= 1;
 
-            var cnt: number = this._parent.numChildren;
-            var i: number
-            var child: GObject;
+            let cnt: number = this._parent.numChildren;
+            let i: number
+            let child: GObject;
             for (i = 0; i < cnt; i++) {
                 child = this._parent.getChildAt(i);
                 if (child.group == this) {
@@ -237,15 +243,15 @@ module fairygui {
             if (!this._percentReady)
                 this.updatePercent();
 
-            var cnt: number = this._parent.numChildren;
-            var i: number;
-            var j: number;
-            var child: GObject;
-            var last: number = -1;
-            var numChildren: number = 0;
-            var lineSize: number = 0;
-            var remainSize: number = 0;
-            var found: boolean = false;
+            let cnt: number = this._parent.numChildren;
+            let i: number;
+            let j: number;
+            let child: GObject;
+            let last: number = -1;
+            let numChildren: number = 0;
+            let lineSize: number = 0;
+            let remainSize: number = 0;
+            let found: boolean = false;
 
             for (i = 0; i < cnt; i++) {
                 child = this._parent.getChildAt(i);
@@ -258,8 +264,8 @@ module fairygui {
 
             if (this._layout == GroupLayoutType.Horizontal) {
                 remainSize = lineSize = this.width - (numChildren - 1) * this._columnGap;
-                var curX: number = NaN;
-                var nw: number;
+                let curX: number = NaN;
+                let nw: number;
                 for (i = 0; i < cnt; i++) {
                     child = this._parent.getChildAt(i);
                     if (child.group != this)
@@ -302,8 +308,8 @@ module fairygui {
             }
             else if (this._layout == GroupLayoutType.Vertical) {
                 remainSize = lineSize = this.height - (numChildren - 1) * this._lineGap;
-                var curY: number = NaN;
-                var nh: number;
+                let curY: number = NaN;
+                let nh: number;
                 for (i = 0; i < cnt; i++) {
                     child = this._parent.getChildAt(i);
                     if (child.group != this)
@@ -349,12 +355,15 @@ module fairygui {
         }
 
         protected handleAlphaChanged(): void {
+            if(this._parent == null){
+                return;
+            }
             if (this._underConstruct)
                 return;
 
-            var cnt: number = this._parent.numChildren;
-            for (var i: number = 0; i < cnt; i++) {
-                var child: GObject = this._parent.getChildAt(i);
+            let cnt: number = this._parent.numChildren;
+            for (let i: number = 0; i < cnt; i++) {
+                let child: GObject = this._parent.getChildAt(i);
                 if (child.group == this)
                     child.alpha = this.alpha;
             }
@@ -364,9 +373,9 @@ module fairygui {
             if (!this._parent)
                 return;
 
-            var cnt: number = this._parent.numChildren;
-            for (var i: number = 0; i < cnt; i++) {
-                var child: GObject = this._parent.getChildAt(i);
+            let cnt: number = this._parent.numChildren;
+            for (let i: number = 0; i < cnt; i++) {
+                let child: GObject = this._parent.getChildAt(i);
                 if (child.group == this)
                     child.handleVisibleChanged();
             }

@@ -5,7 +5,7 @@ module fairygui {
         private _gearAnimation: GearAnimation;
         private _gearColor: GearColor;
 
-        private _url: string;
+        private _url: string|null;
         private _align: AlignType;
         private _verticalAlign: VertAlignType;
         private _autoSize: boolean;
@@ -16,7 +16,7 @@ module fairygui {
         private _frame: number = 0;
         private _color: number = 0;
 
-        private _contentItem: PackageItem;
+        private _contentItem: PackageItem|null;
         private _contentSourceWidth: number = 0;
         private _contentSourceHeight: number = 0;
         private _contentWidth: number = 0;
@@ -24,8 +24,8 @@ module fairygui {
 
         private _container: UIContainer;
         private _content: egret.Bitmap | fairygui.MovieClip;
-        private _errorSign: GObject;
-        private _content2: GComponent;
+        private _errorSign: GObject|null;
+        private _content2: GComponent|null;
 
         private _updatingLayout: boolean;
 
@@ -54,7 +54,7 @@ module fairygui {
 
         public dispose(): void {
             if (this._contentItem == null && (this._content instanceof egret.Bitmap)) {
-                var texture: egret.Texture = <egret.Texture>(<egret.Bitmap>this._content).texture;
+                let texture: egret.Texture = <egret.Texture>(<egret.Bitmap>this._content).texture;
                 if (texture != null)
                     this.freeExternal(texture);
             }
@@ -63,24 +63,24 @@ module fairygui {
             super.dispose();
         }
 
-        public get url(): string {
+        public get url(): string|null {
             return this._url;
         }
 
-        public set url(value: string) {
+        public set url(value: string|null) {
             if (this._url == value)
                 return;
-
+            this.clearContent();
             this._url = value;
             this.loadContent();
             this.updateGear(7);
         }
 
-        public get icon(): string {
+        public get icon(): string|null {
             return this._url;
         }
 
-        public set icon(value: string) {
+        public set icon(value: string|null) {
             this.url = value;
         }
 
@@ -210,22 +210,22 @@ module fairygui {
             return this._content;
         }
 
-        public get component(): GComponent {
+        public get component(): GComponent|null {
             return this._content2;
         }
 
-        public get texture(): egret.Texture {
+        public get texture(): egret.Texture|null {
             if (this._content instanceof egret.Bitmap)
                 return (<egret.Bitmap>this._content).texture;
             else
                 return null;
         }
 
-        public set texture(value: egret.Texture) {
+        public set texture(value: egret.Texture|null) {
             this.url = null;
             this.switchToMovieMode(false);
 
-            (<egret.Bitmap>this._content).texture = value;
+            (<egret.Bitmap>this._content).texture = <any>value;
             if (value != null) {
                 this._contentSourceWidth = value.textureWidth;
                 this._contentSourceHeight = value.textureHeight;
@@ -238,8 +238,7 @@ module fairygui {
         }
 
         protected loadContent(): void {
-            this.clearContent();
-
+            
             if (!this._url)
                 return;
 
@@ -263,7 +262,7 @@ module fairygui {
                     }
                     else {
                         this.switchToMovieMode(false);
-                        var bm: egret.Bitmap = <egret.Bitmap>this._content;
+                        let bm: egret.Bitmap = <egret.Bitmap>this._content;
                         bm.texture = this._contentItem.texture;
                         bm.scale9Grid = this._contentItem.scale9Grid;
                         if (this._contentItem.scaleByTile)
@@ -279,7 +278,7 @@ module fairygui {
                     this.switchToMovieMode(true);
                     this._contentSourceWidth = this._contentItem.width;
                     this._contentSourceHeight = this._contentItem.height;
-                    var mc: MovieClip = <MovieClip>this._content;
+                    let mc: MovieClip = <MovieClip>this._content;
                     mc.interval = this._contentItem.interval;
                     mc.swing = this._contentItem.swing;
                     mc.repeatDelay = this._contentItem.repeatDelay;
@@ -287,7 +286,7 @@ module fairygui {
                     this.updateLayout();
                 }
                 else if (this._contentItem.type == PackageItemType.Component) {
-                    var obj: GObject = UIPackage.createObjectFromURL(itemURL);
+                    let obj: GObject|null = UIPackage.createObjectFromURL(itemURL);
                     if (!obj)
                         this.setErrorState();
                     else if (!(obj instanceof GComponent)) {
@@ -296,7 +295,9 @@ module fairygui {
                     }
                     else {
                         this._content2 = obj.asCom;
-                        this._container.addChild(this._content2.displayObject);
+                        if(this._content2 != null){
+                            this._container.addChild(this._content2.displayObject);
+                        }
                         this._contentSourceWidth = this._contentItem.width;
                         this._contentSourceHeight = this._contentItem.height;
                         this.updateLayout();
@@ -322,6 +323,9 @@ module fairygui {
         }
 
         protected loadExternal(): void {
+            if(!this._url){
+                return;
+            }
             RES.getResAsync(this._url, this.__getResCompleted, this);
         }
 
@@ -336,7 +340,7 @@ module fairygui {
             else
                 this._container.addChild(this._content);
             (<egret.Bitmap>this._content).texture = texture;
-            (<egret.Bitmap>this._content).scale9Grid = null;
+            (<egret.Bitmap>this._content).scale9Grid = <any>null;
             (<egret.Bitmap>this._content).fillMode = egret.BitmapFillMode.SCALE;
             this._contentSourceWidth = texture.textureWidth;
             this._contentSourceHeight = texture.textureHeight;
@@ -415,7 +419,7 @@ module fairygui {
                 }
             }
 
-            var sx: number = 1, sy: number = 1;
+            let sx: number = 1, sy: number = 1;
             if (this._fill != LoaderFillType.None) {
                 sx = this.width / this._contentSourceWidth;
                 sy = this.height / this._contentSourceHeight;
@@ -460,7 +464,7 @@ module fairygui {
                 this._content.scaleY = sy;
             }
 
-            var nx: number, ny: number;
+            let nx: number, ny: number;
             if (this._align == AlignType.Center)
                 nx = Math.floor((this.width - this._contentWidth) / 2);
             else if (this._align == AlignType.Right)
@@ -489,7 +493,7 @@ module fairygui {
                 this._container.removeChild(this._content);
 
             if (this._contentItem == null && (this._content instanceof egret.Bitmap)) {
-                var texture: egret.Texture = <egret.Texture>(<egret.Bitmap>this._content).texture;
+                let texture: egret.Texture = <egret.Texture>(<egret.Bitmap>this._content).texture;
                 if (texture != null)
                     this.freeExternal(texture);
             }
@@ -504,8 +508,9 @@ module fairygui {
         protected handleSizeChanged(): void {
             if (!this._updatingLayout)
                 this.updateLayout();
-
-            this._container.hitArea.setTo(0, 0, this.width, this.height);
+            if(this._container.hitArea){
+                this._container.hitArea.setTo(0, 0, this.width, this.height);
+            }
         }
 
         public setup_beforeAdd(buffer: ByteBuffer, beginPos: number): void {
@@ -525,7 +530,7 @@ module fairygui {
 
             if (buffer.readBool())
                 this.color = buffer.readColor();
-            var fillMethod: number = buffer.readByte();
+            let fillMethod: number = buffer.readByte();
             if (fillMethod != 0)
                 buffer.skip(6);
 

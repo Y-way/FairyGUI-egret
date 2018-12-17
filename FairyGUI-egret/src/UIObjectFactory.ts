@@ -13,7 +13,7 @@ module fairygui {
             if (url == null)
                 throw "Invaild url: " + url;
 
-            var pi: PackageItem = UIPackage.getItemByURL(url);
+            let pi: PackageItem|null = UIPackage.getItemByURL(url);
             if (pi != null)
                 pi.extensionType = type;
 
@@ -30,14 +30,14 @@ module fairygui {
                 pi.extensionType = UIObjectFactory.packageItemExtensions["ui://" + pi.owner.name + "/" + pi.name];
         }
 
-        public static newObject(pi: PackageItem): GObject {
+        public static newObject(pi: PackageItem): GObject|null {
             if (pi.extensionType != null)
                 return new pi.extensionType();
             else
                 return this.newObject2(pi.objectType);
         }
 
-        public static newObject2(type: ObjectType): GObject {
+        public static newObject2(type: ObjectType): GObject|null {
             switch (type) {
                 case ObjectType.Image:
                     return new GImage();

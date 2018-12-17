@@ -2,20 +2,20 @@
 module fairygui {
 
     export class GButton extends GComponent {
-        protected _titleObject: GObject;
-        protected _iconObject: GObject;
+        protected _titleObject: GObject|null;
+        protected _iconObject: GObject|null;
         protected _relatedController: Controller;
 
         private _mode: ButtonMode;
         private _selected: boolean;
-        private _title: string;
+        private _title: string|null;
         private _selectedTitle: string;
-        private _icon: string;
-        private _selectedIcon: string;
+        private _icon: string|null;
+        private _selectedIcon: string|null;
         private _sound: string;
         private _soundVolumeScale: number;
         private _pageOption: PageOption;
-        private _buttonController: Controller;
+        private _buttonController: Controller|null;
         private _changeStateOnClick: boolean;
         private _linkedPopup: GObject;
         private _downEffect: number;
@@ -46,11 +46,11 @@ module fairygui {
             this._downEffectValue = 0.8;
         }
 
-        public get icon(): string {
+        public get icon(): string|null {
             return this._icon;
         }
 
-        public set icon(value: string) {
+        public set icon(value: string|null) {
             this._icon = value;
             value = (this._selected && this._selectedIcon) ? this._selectedIcon : this._icon;
             if (this._iconObject != null)
@@ -58,33 +58,33 @@ module fairygui {
             this.updateGear(7);
         }
 
-        public get selectedIcon(): string {
+        public get selectedIcon(): string|null {
             return this._selectedIcon;
         }
 
-        public set selectedIcon(value: string) {
+        public set selectedIcon(value: string|null) {
             this._selectedIcon = value;
             value = (this._selected && this._selectedIcon) ? this._selectedIcon : this._icon;
             if (this._iconObject != null)
                 this._iconObject.icon = value;
         }
 
-        public get title(): string {
+        public get title(): string|null {
             return this._title;
         }
 
-        public set title(value: string) {
+        public set title(value: string|null) {
             this._title = value;
             if (this._titleObject)
                 this._titleObject.text = (this._selected && this._selectedTitle) ? this._selectedTitle : this._title;
             this.updateGear(6);
         }
 
-        public get text(): string {
+        public get text(): string|null {
             return this.title;
         }
 
-        public set text(value: string) {
+        public set text(value: string|null) {
             this.title = value;
         }
 
@@ -99,7 +99,7 @@ module fairygui {
         }
 
         public get titleColor(): number {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 return tf.color;
             else
@@ -107,13 +107,13 @@ module fairygui {
         }
 
         public set titleColor(value: number) {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 tf.color = value;
         }
 
         public get titleFontSize(): number {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 return tf.fontSize;
             else
@@ -121,7 +121,7 @@ module fairygui {
         }
 
         public set titleFontSize(value: number) {
-            var tf: GTextField = this.getTextField();
+            let tf: GTextField|null = this.getTextField();
             if (tf != null)
                 tf.fontSize = value;
         }
@@ -162,7 +162,7 @@ module fairygui {
                 if (this._selectedTitle && this._titleObject)
                     this._titleObject.text = this._selected ? this._selectedTitle : this._title;
                 if (this._selectedIcon) {
-                    var str: string = this._selected ? this._selectedIcon : this._icon;
+                    let str: string|null = this._selected ? this._selectedIcon : this._icon;
                     if (this._iconObject != null)
                         this._iconObject.icon = str;
                 }
@@ -175,7 +175,7 @@ module fairygui {
                             this._parent.adjustRadioGroupDepth(this, this._relatedController);
                     }
                     else if (this._mode == ButtonMode.Check && this._relatedController.selectedPageId == this._pageOption.id)
-                        this._relatedController.oppositePageId = this._pageOption.id;
+                        this._relatedController.oppositePageId = <string>this._pageOption.id;
                 }
             }
         }
@@ -228,7 +228,7 @@ module fairygui {
             this._linkedPopup = value;
         }
 
-        public getTextField(): GTextField {
+        public getTextField(): GTextField|null {
             if (this._titleObject instanceof GTextField)
                 return (<GTextField>this._titleObject);
             else if (this._titleObject instanceof GLabel)
@@ -261,19 +261,19 @@ module fairygui {
                 this._buttonController.selectedPage = val;
 
             if (this._downEffect == 1) {
-                var cnt: number = this.numChildren;
+                let cnt: number = this.numChildren;
                 if (val == GButton.DOWN || val == GButton.SELECTED_OVER || val == GButton.SELECTED_DISABLED) {
-                    var r: number = this._downEffectValue * 255;
-                    var color: number = (r << 16) + (r << 8) + r;
-                    for (var i: number = 0; i < cnt; i++) {
-                        var obj: GObject = this.getChildAt(i);
+                    let r: number = this._downEffectValue * 255;
+                    let color: number = (r << 16) + (r << 8) + r;
+                    for (let i: number = 0; i < cnt; i++) {
+                        let obj: GObject = this.getChildAt(i);
                         if (obj["color"] != undefined && !(obj instanceof GTextField))
                             (<any>obj).color = color;
                     }
                 }
                 else {
-                    for (var i: number = 0; i < cnt; i++) {
-                        var obj: GObject = this.getChildAt(i);
+                    for (let i: number = 0; i < cnt; i++) {
+                        let obj: GObject = this.getChildAt(i);
                         if (obj["color"] != undefined && !(obj instanceof GTextField))
                             (<any>obj).color = 0xFFFFFF;
                     }
@@ -325,7 +325,7 @@ module fairygui {
             buffer.seek(0, 6);
 
             this._mode = buffer.readByte();
-            var str: string = buffer.readS();
+            let str: string|null = buffer.readS();
             if (str)
                 this._sound = str;
             this._soundVolumeScale = buffer.readFloat();
@@ -358,8 +358,8 @@ module fairygui {
             if (buffer.readByte() != this.packageItem.objectType)
                 return;
 
-            var str: string;
-            var iv: number;
+            let str: string|null;
+            let iv: number;
 
             str = buffer.readS();
             if (str != null)
@@ -380,7 +380,7 @@ module fairygui {
                 this.titleFontSize = iv;
             iv = buffer.readShort();
             if (iv >= 0)
-                this._relatedController = this.parent.getControllerAt(iv);
+                this._relatedController = (this.parent as GComponent).getControllerAt(iv);
             this.pageOption.id = buffer.readS();
 
             str = buffer.readS();
@@ -452,11 +452,11 @@ module fairygui {
             }
         }
 
-        private __click(evt: egret.TouchEvent): void {
+        private __click(evt: egret.TouchEvent|null): void {
             if (this._sound) {
-                var pi: PackageItem = UIPackage.getItemByURL(this._sound);
+                let pi: PackageItem|null = UIPackage.getItemByURL(this._sound);
                 if (pi) {
-                    var sound: egret.Sound = <egret.Sound>pi.owner.getItemAsset(pi);
+                    let sound: egret.Sound = <egret.Sound>pi.owner.getItemAsset(pi);
                     if (sound)
                         GRoot.inst.playOneShotSound(sound, this._soundVolumeScale);
                 }

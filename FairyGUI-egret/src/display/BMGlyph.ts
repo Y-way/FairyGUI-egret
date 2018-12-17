@@ -11,7 +11,7 @@ module fairygui {
         public advance: number = 0;
         public lineHeight: number = 0;
         public channel: number = 0;
-        public texture: egret.Texture;
+        public texture: egret.Texture|null;
 
         public constructor() {
         }

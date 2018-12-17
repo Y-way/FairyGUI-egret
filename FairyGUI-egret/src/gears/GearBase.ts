@@ -31,24 +31,24 @@ module fairygui {
         }
 
         public setup(buffer: ByteBuffer): void {
-            this._controller = this._owner.parent.getControllerAt(buffer.readShort());
+            this._controller = (this._owner.parent as GComponent).getControllerAt(buffer.readShort());
             this.init();
 
-            var cnt: number;
-            var i: number;
-            var page: string;
+            let cnt: number;
+            let i: number;
+            let page: string;
 
             if (this instanceof GearDisplay) {
                 cnt = buffer.readShort();
-                var pages: string[] = [];
+                let pages: string[] = [];
                 for (i = 0; i < cnt; i++)
-                    pages[i] = buffer.readS();
+                    pages[i] = <string>buffer.readS();
                 (<GearDisplay><any>this).pages = pages;
             }
             else {
                 cnt = buffer.readShort();
                 for (i = 0; i < cnt; i++) {
-                    page = buffer.readS();
+                    page = <string>buffer.readS();
                     if (page == null)
                         continue;
 
@@ -56,7 +56,7 @@ module fairygui {
                 }
 
                 if (buffer.readBool())
-                    this.addStatus(null, buffer);
+                    this.addStatus(<any>null, buffer);
             }
 
             if (buffer.readBool()) {
@@ -92,7 +92,7 @@ module fairygui {
         public delay: number;
 
         public _displayLockToken: number;
-        public _tweener: GTweener;
+        public _tweener: GTweener|null;
 
         public constructor() {
             this.tween = true;

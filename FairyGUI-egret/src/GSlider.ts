@@ -7,14 +7,14 @@ module fairygui {
         private _titleType: ProgressTitleType;
         private _reverse: boolean = false;
 
-        private _titleObject: GTextField;
-        private _barObjectH: GObject;
-        private _barObjectV: GObject;
+        private _titleObject: GTextField|null;
+        private _barObjectH: GObject|null;
+        private _barObjectV: GObject|null;
         private _barMaxWidth: number = 0;
         private _barMaxHeight: number = 0;
         private _barMaxWidthDelta: number = 0;
         private _barMaxHeightDelta: number = 0;
-        private _gripObject: GObject;
+        private _gripObject: GObject|null;
         private _clickPos: egret.Point;
         private _clickPercent: number = 0;
         private _barStartX: number = 0;
@@ -63,7 +63,7 @@ module fairygui {
         }
 
         public update(): void {
-            var percent: number = Math.min(this._value / this._max, 1);
+            let percent: number = Math.min(this._value / this._max, 1);
             this.updateWidthPercent(percent);
         }
 
@@ -88,8 +88,8 @@ module fairygui {
                 }
             }
 
-            var fullWidth: number = this.width - this._barMaxWidthDelta;
-            var fullHeight: number = this.height - this._barMaxHeightDelta;
+            let fullWidth: number = this.width - this._barMaxWidthDelta;
+            let fullHeight: number = this.height - this._barMaxHeightDelta;
             if (!this._reverse) {
                 if (this._barObjectH)
                     this._barObjectH.width = Math.round(fullWidth * percent);
@@ -172,7 +172,9 @@ module fairygui {
 
             this._clickPos = this.globalToLocal(evt.stageX, evt.stageY);
             this._clickPercent = this._value / this._max;
-
+            if(this._gripObject == null){
+                return;
+            }
             this._gripObject.displayObject.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.__gripMouseMove, this);
             this._gripObject.displayObject.stage.addEventListener(egret.TouchEvent.TOUCH_END, this.__gripMouseUp, this);
         }
@@ -183,15 +185,15 @@ module fairygui {
                 return;
             }
 
-            var pt: egret.Point = this.globalToLocal(evt.stageX, evt.stageY, GSlider.sSilderHelperPoint);
-            var deltaX: number = pt.x - this._clickPos.x;
-            var deltaY: number = pt.y - this._clickPos.y;
+            let pt: egret.Point = this.globalToLocal(evt.stageX, evt.stageY, GSlider.sSilderHelperPoint);
+            let deltaX: number = pt.x - this._clickPos.x;
+            let deltaY: number = pt.y - this._clickPos.y;
             if (this._reverse) {
                 deltaX = -deltaX;
                 deltaY = -deltaY;
             }
 
-            var percent: number;
+            let percent: number;
             if (this._barObjectH)
                 percent = this._clickPercent + deltaX / this._barMaxWidth;
             else
@@ -200,7 +202,7 @@ module fairygui {
                 percent = 1;
             else if (percent < 0)
                 percent = 0;
-            var newValue: number = Math.round(this._max * percent);
+            let newValue: number = Math.round(this._max * percent);
             if (newValue != this._value) {
                 this._value = newValue;
                 this.dispatchEvent(new StateChangeEvent(StateChangeEvent.CHANGED));
@@ -216,10 +218,13 @@ module fairygui {
         private __barMouseDown(evt: egret.TouchEvent): void {
             if (!this.changeOnClick)
                 return;
+            if(this._gripObject == null){
+                return;
+            }
 
-            var pt: egret.Point = this._gripObject.globalToLocal(evt.stageX, evt.stageY, GSlider.sSilderHelperPoint);
-            var percent: number = this._value / this._max;
-            var delta: number;
+            let pt: egret.Point = this._gripObject.globalToLocal(evt.stageX, evt.stageY, GSlider.sSilderHelperPoint);
+            let percent: number = this._value / this._max;
+            let delta: number = 0;
             if (this._barObjectH)
                 delta = (pt.x - this._gripObject.width / 2) / this._barMaxWidth;
             if (this._barObjectV)
@@ -232,7 +237,7 @@ module fairygui {
                 percent = 1;
             else if (percent < 0)
                 percent = 0;
-            var newValue: number = Math.round(this._max * percent);
+            let newValue: number = Math.round(this._max * percent);
             if (newValue != this._value) {
                 this._value = newValue;
                 this.dispatchEvent(new StateChangeEvent(StateChangeEvent.CHANGED));
